@@ -1,0 +1,31 @@
+test,case,estimate,target,error,tolerance,units,passed,note
+1. curve reproduction,"USD P(0,0.5y)",0.9786478192228028,0.9786408906641914,6.928558611396518e-06,2.355622355062255e-05,discount factor,True,MC std err 7.85e-06
+1. curve reproduction,"EUR P(0,0.5y)",0.9878024135999289,0.9877761380156393,2.627558428958121e-05,0.0010372192802061294,discount factor,True,MC std err 3.46e-04
+1. curve reproduction,"EUR P(0,2.5y) via P(0.5y,2.5y)",0.946107634167134,0.9461068558634289,7.783037050401731e-07,0.0009720280069339669,discount factor,True,MC std err 3.24e-04
+1. curve reproduction,"USD P(0,1y)",0.9589646387490235,0.9589486853891808,1.595335984272417e-05,6.493355909723124e-05,discount factor,True,MC std err 2.16e-05
+1. curve reproduction,"EUR P(0,1y)",0.9759170849979393,0.9766560323558198,-0.0007389473578804928,0.0014553273001545529,discount factor,True,MC std err 4.85e-04
+1. curve reproduction,"EUR P(0,3y) via P(1y,3y)",0.9355474501346529,0.9362787463148641,-0.0007312961802111717,0.001366579072933521,discount factor,True,MC std err 4.56e-04
+1. curve reproduction,"USD P(0,2y)",0.9223079289392808,0.9222824648540998,2.546408518100396e-05,0.00017357708140082587,discount factor,True,MC std err 5.79e-05
+1. curve reproduction,"EUR P(0,2y)",0.9555625200089549,0.9560414997699261,-0.00047897976097122097,0.0019952982116702932,discount factor,True,MC std err 6.65e-04
+1. curve reproduction,"EUR P(0,4y) via P(2y,4y)",0.9162973755402629,0.916790721883019,-0.0004933463427561069,0.0018835688634764316,discount factor,True,MC std err 6.28e-04
+1. curve reproduction,"USD P(0,3y)",0.8875559004732635,0.8874908606255949,6.503984766859094e-05,0.0003022321951921311,discount factor,True,MC std err 1.01e-04
+1. curve reproduction,"EUR P(0,3y)",0.9364445688831409,0.9362787463148641,0.00016582256827679664,0.0023924475896066988,discount factor,True,MC std err 7.97e-04
+1. curve reproduction,"EUR P(0,5y) via P(3y,5y)",0.897598112811242,0.897468513415549,0.00012959939569301415,0.0022653693831340563,discount factor,True,MC std err 7.55e-04
+1. curve reproduction,"USD P(0,5y)",0.8213794513104241,0.8211187882666933,0.0002606630437308466,0.0005823497197983648,discount factor,True,MC std err 1.94e-04
+1. curve reproduction,"EUR P(0,5y)",0.8989593893996123,0.897468513415549,0.001490875984063278,0.002980814523104884,discount factor,True,MC std err 9.94e-04
+1. curve reproduction,"EUR P(0,7y) via P(5y,7y)",0.8609640614561337,0.8594839222096526,0.0014801392464810492,0.002839094337697391,discount factor,True,MC std err 9.46e-04
+2. FX martingale,"fair 0.5y forward, PV per EUR",2.121058518728306e-05,0.0,2.121058518728306e-05,0.0011377335295840848,USD per EUR of notional,True,+0.20 bp of forward; MC std err 3.79e-04
+2. FX martingale,"fair 1y forward, PV per EUR",-0.0008307148327426449,0.0,-0.0008307148327426449,0.0015926006017347475,USD per EUR of notional,True,-7.73 bp of forward; MC std err 5.31e-04
+2. FX martingale,"fair 2y forward, PV per EUR",-0.0005559135210344687,0.0,-0.0005559135210344687,0.0021729972560107554,USD per EUR of notional,True,-5.29 bp of forward; MC std err 7.24e-04
+2. FX martingale,"fair 3y forward, PV per EUR",0.00010692802561167473,0.0,0.00010692802561167473,0.002596484088469999,USD per EUR of notional,True,+1.04 bp of forward; MC std err 8.65e-04
+2. FX martingale,"fair 5y forward, PV per EUR",0.0013265734061969831,0.0,0.0013265734061969831,0.0032190158175065533,USD per EUR of notional,True,+13.44 bp of forward; MC std err 1.07e-03
+3. quanto adjustment,"rho_fS=+0.00, adjustment ON",13.406049142105042,0.0,13.406049142105042,33.86977922899951,bp of the fair forward,True,fair forward must price to zero
+3. quanto adjustment,"rho_fS=+0.00, adjustment OFF",0.0,0.0,0.0,0.5,bp of the fair forward,True,paired difference vs closed form (V4)
+3. quanto adjustment,"rho_fS=-0.40, adjustment ON",13.567232357698039,0.0,13.567232357698039,35.803294334923905,bp of the fair forward,True,fair forward must price to zero
+3. quanto adjustment,"rho_fS=-0.40, adjustment OFF",28.643284534586737,28.59541090183937,0.047873632747367015,1.4297705450919684,bp of the fair forward,True,paired difference vs closed form (V4)
+4. zero-vol degeneracy,deterministic mode == sigma_rate=0,0.0,0.0,0.0,1e-14,max relative spot difference,True,identical random draws
+4. zero-vol degeneracy,flat curves == single-factor GBM spot,2.820918648408875e-15,0.0,2.820918648408875e-15,1e-12,max relative spot difference,True,"closed-form base model, same draws"
+4. zero-vol degeneracy,flat curves == exp(-r_d t) discounting,8.881784197001252e-16,0.0,8.881784197001252e-16,1e-14,max absolute DF difference,True,deterministic discounting recovered
+4. zero-vol degeneracy,flat curves == exp(-r_f (T-t)) bond,3.3306690738754696e-16,0.0,3.3306690738754696e-16,1e-14,max absolute bond difference,True,"Hull-White A(t,T) collapses correctly"
+5. convergence,std error scaling exponent,-0.5100197467359634,-0.5,-0.010019746735963397,0.1,d log(se) / d log(N),True,Monte Carlo theory predicts -0.5
+5. convergence,"10,000-path CVA inside 40,000-path 95% CI",3640172.176427498,3633798.351508016,6373.824919481762,45434.11866093772,USD,True,production relative std error 1.284%

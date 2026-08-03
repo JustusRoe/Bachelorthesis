@@ -1,197 +1,197 @@
 netting_set,hazard,label,product,leg,notional_eur,direction,strike,maturity_y
-NS1_small_short,0.005,NS1_small_short_fwd00,FXForward,-,12900000.0,-1,1.1335099745105497,0.75
-NS1_small_short,0.005,NS1_small_short_fwd01,FXForward,-,22300000.0,1,1.079410251282045,0.038461538461538464
-NS1_small_short,0.005,NS1_small_short_fwd02,FXForward,-,16200000.0,-1,1.107751308957203,0.5
-NS1_small_short,0.005,NS1_small_short_fwd03,FXForward,-,46800000.0,1,1.1166039454536603,0.019230769230769232
-NS1_small_short,0.005,NS1_small_short_fwd04,FXForward,-,27900000.0,1,1.0956184874038224,0.019230769230769232
-NS1_small_short,0.005,NS1_small_short_fwd05,FXForward,-,43300000.0,1,1.1218613995481668,0.75
-NS1_small_short,0.005,NS1_small_short_fwd06,FXForward,-,11100000.0,1,1.116646322605202,0.08333333333333333
-NS1_small_short,0.005,NS1_small_short_swap07,FXSwap,near,19100000.0,-1,1.1229399965251938,0.25
-NS1_small_short,0.005,NS1_small_short_swap07,FXSwap,far,19100000.0,1,1.088217751672696,0.75
-NS1_small_short,0.005,NS1_small_short_fwd08,FXForward,-,35100000.0,1,1.1373161078784886,0.5
-NS1_small_short,0.005,NS1_small_short_fwd09,FXForward,-,35700000.0,1,1.0819047360264034,0.038461538461538464
-NS2_medium_mixed,0.01,NS2_medium_mixed_swap00,FXSwap,near,43500000.0,1,1.122252858581498,0.5
-NS2_medium_mixed,0.01,NS2_medium_mixed_swap00,FXSwap,far,43500000.0,-1,1.116918507749673,2.0
-NS2_medium_mixed,0.01,NS2_medium_mixed_swap01,FXSwap,near,30900000.0,-1,1.113396142263835,0.08333333333333333
-NS2_medium_mixed,0.01,NS2_medium_mixed_swap01,FXSwap,far,30900000.0,1,1.1068153810426544,0.75
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd02,FXForward,-,43100000.0,-1,1.1065952272919197,0.08333333333333333
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd03,FXForward,-,46800000.0,1,1.1475826980137265,3.0
-NS2_medium_mixed,0.01,NS2_medium_mixed_swap04,FXSwap,near,48300000.0,-1,1.1111078462199655,1.0
-NS2_medium_mixed,0.01,NS2_medium_mixed_swap04,FXSwap,far,48300000.0,1,1.1776784099830786,2.0
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd05,FXForward,-,10200000.0,-1,1.1208708619930112,0.08333333333333333
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd06,FXForward,-,37200000.0,-1,1.1353465684263568,3.0
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd07,FXForward,-,39600000.0,-1,1.115028031175515,0.25
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd08,FXForward,-,32500000.0,1,1.1312894726927725,0.25
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd09,FXForward,-,45000000.0,1,1.124178383349956,0.25
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd10,FXForward,-,41000000.0,1,1.0978156777835801,0.08333333333333333
-NS2_medium_mixed,0.01,NS2_medium_mixed_swap11,FXSwap,near,31800000.0,-1,1.1633494620611269,1.5
-NS2_medium_mixed,0.01,NS2_medium_mixed_swap11,FXSwap,far,31800000.0,1,1.158334516272508,3.0
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd12,FXForward,-,19800000.0,-1,1.1633622791266227,1.5
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd13,FXForward,-,25800000.0,1,1.0971281212446433,0.25
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd14,FXForward,-,49500000.0,-1,1.1055567978530438,0.08333333333333333
-NS2_medium_mixed,0.01,NS2_medium_mixed_swap15,FXSwap,near,41100000.0,-1,1.0906532145261887,0.75
-NS2_medium_mixed,0.01,NS2_medium_mixed_swap15,FXSwap,far,41100000.0,1,1.123036985695978,1.5
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd16,FXForward,-,36000000.0,-1,1.183334046774444,3.0
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd17,FXForward,-,34500000.0,1,1.1136765426917774,1.0
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd18,FXForward,-,49100000.0,1,1.1371218584043896,3.0
-NS2_medium_mixed,0.01,NS2_medium_mixed_fwd19,FXForward,-,15100000.0,-1,1.1626469319979178,3.0
-NS3_balanced,0.02,NS3_balanced_swap00,FXSwap,near,37300000.0,-1,1.1285072223313142,0.25
-NS3_balanced,0.02,NS3_balanced_swap00,FXSwap,far,37300000.0,1,1.083746113205297,0.5
-NS3_balanced,0.02,NS3_balanced_swap01,FXSwap,near,42800000.0,-1,1.1192903002016596,0.019230769230769232
-NS3_balanced,0.02,NS3_balanced_swap01,FXSwap,far,42800000.0,1,1.2161749227168697,4.0
-NS3_balanced,0.02,NS3_balanced_fwd02,FXForward,-,48900000.0,-1,1.1030481250175357,0.25
-NS3_balanced,0.02,NS3_balanced_swap03,FXSwap,near,21500000.0,1,1.1093510987715183,1.0
-NS3_balanced,0.02,NS3_balanced_swap03,FXSwap,far,21500000.0,-1,1.1266049342703757,2.0
-NS3_balanced,0.02,NS3_balanced_fwd04,FXForward,-,23400000.0,-1,1.1097796385067935,0.5
-NS3_balanced,0.02,NS3_balanced_swap05,FXSwap,near,32300000.0,-1,1.089325671562723,0.038461538461538464
-NS3_balanced,0.02,NS3_balanced_swap05,FXSwap,far,32300000.0,1,1.1051429095985599,1.0
-NS3_balanced,0.02,NS3_balanced_fwd06,FXForward,-,43100000.0,1,1.13712892919192,1.5
-NS3_balanced,0.02,NS3_balanced_fwd07,FXForward,-,24700000.0,-1,1.1116654246125341,1.5
-NS3_balanced,0.02,NS3_balanced_fwd08,FXForward,-,22100000.0,1,1.2422225112623155,5.0
-NS3_balanced,0.02,NS3_balanced_fwd09,FXForward,-,35300000.0,-1,1.11244602307262,0.08333333333333333
-NS3_balanced,0.02,NS3_balanced_fwd10,FXForward,-,26300000.0,1,1.1657900746552907,3.0
-NS3_balanced,0.02,NS3_balanced_fwd11,FXForward,-,30100000.0,-1,1.1022348779881386,0.08333333333333333
-NS3_balanced,0.02,NS3_balanced_fwd12,FXForward,-,42900000.0,-1,1.1245984338860162,0.08333333333333333
-NS3_balanced,0.02,NS3_balanced_fwd13,FXForward,-,49900000.0,1,1.1653727375863885,3.0
-NS3_balanced,0.02,NS3_balanced_fwd14,FXForward,-,46100000.0,1,1.0999419939916901,1.5
-NS3_balanced,0.02,NS3_balanced_fwd15,FXForward,-,36000000.0,1,1.1419839651953216,1.0
-NS3_balanced,0.02,NS3_balanced_fwd16,FXForward,-,5500000.0,-1,1.0974178314882739,0.038461538461538464
-NS3_balanced,0.02,NS3_balanced_fwd17,FXForward,-,12100000.0,1,1.1952877626597118,4.0
-NS3_balanced,0.02,NS3_balanced_fwd18,FXForward,-,47600000.0,-1,1.109490893160301,0.038461538461538464
-NS3_balanced,0.02,NS3_balanced_fwd19,FXForward,-,6100000.0,-1,1.2078011375287012,4.0
-NS3_balanced,0.02,NS3_balanced_swap20,FXSwap,near,37200000.0,1,1.1292224247897082,0.038461538461538464
-NS3_balanced,0.02,NS3_balanced_swap20,FXSwap,far,37200000.0,-1,1.1243145121880431,0.75
-NS3_balanced,0.02,NS3_balanced_fwd21,FXForward,-,11400000.0,-1,1.1110744298265298,0.019230769230769232
-NS3_balanced,0.02,NS3_balanced_fwd22,FXForward,-,31100000.0,-1,1.1131055354147734,0.75
-NS3_balanced,0.02,NS3_balanced_swap23,FXSwap,near,9300000.0,-1,1.112360820729762,0.25
-NS3_balanced,0.02,NS3_balanced_swap23,FXSwap,far,9300000.0,1,1.1493940665236648,0.75
-NS3_balanced,0.02,NS3_balanced_swap24,FXSwap,near,44300000.0,1,1.098776082919766,0.019230769230769232
-NS3_balanced,0.02,NS3_balanced_swap24,FXSwap,far,44300000.0,-1,1.068419720149255,0.038461538461538464
-NS3_balanced,0.02,NS3_balanced_swap25,FXSwap,near,40500000.0,-1,1.0861652781792395,0.08333333333333333
-NS3_balanced,0.02,NS3_balanced_swap25,FXSwap,far,40500000.0,1,1.1137006735424602,2.0
-NS3_balanced,0.02,NS3_balanced_fwd26,FXForward,-,37100000.0,1,1.1498954950555746,1.0
-NS3_balanced,0.02,NS3_balanced_fwd27,FXForward,-,9000000.0,1,1.1328468071897864,2.0
-NS3_balanced,0.02,NS3_balanced_swap28,FXSwap,near,21800000.0,1,1.0936393095715866,0.5
-NS3_balanced,0.02,NS3_balanced_swap28,FXSwap,far,21800000.0,-1,1.1338317356979484,3.0
-NS3_balanced,0.02,NS3_balanced_fwd29,FXForward,-,38100000.0,-1,1.1778302393621696,2.0
-NS4_long_dated,0.035,NS4_long_dated_fwd00,FXForward,-,43100000.0,1,1.121152186209845,1.5
-NS4_long_dated,0.035,NS4_long_dated_swap01,FXSwap,near,21900000.0,1,1.127785464306097,1.0
-NS4_long_dated,0.035,NS4_long_dated_swap01,FXSwap,far,21900000.0,-1,1.1189408864626784,1.5
-NS4_long_dated,0.035,NS4_long_dated_swap02,FXSwap,near,31600000.0,-1,1.1106198163607452,1.0
-NS4_long_dated,0.035,NS4_long_dated_swap02,FXSwap,far,31600000.0,1,1.1432905571910914,2.0
-NS4_long_dated,0.035,NS4_long_dated_swap03,FXSwap,near,32200000.0,1,1.1487345057911864,1.0
-NS4_long_dated,0.035,NS4_long_dated_swap03,FXSwap,far,32200000.0,-1,1.1510334837366847,2.0
-NS4_long_dated,0.035,NS4_long_dated_swap04,FXSwap,near,34900000.0,-1,1.0890823171241772,0.5
-NS4_long_dated,0.035,NS4_long_dated_swap04,FXSwap,far,34900000.0,1,1.0944883451435174,1.0
-NS4_long_dated,0.035,NS4_long_dated_fwd05,FXForward,-,20500000.0,1,1.1237248378075302,2.0
-NS4_long_dated,0.035,NS4_long_dated_swap06,FXSwap,near,41100000.0,-1,1.14161704926106,2.0
-NS4_long_dated,0.035,NS4_long_dated_swap06,FXSwap,far,41100000.0,1,1.1717487326876233,3.0
-NS4_long_dated,0.035,NS4_long_dated_fwd07,FXForward,-,15700000.0,1,1.145782169477912,1.5
-NS4_long_dated,0.035,NS4_long_dated_swap08,FXSwap,near,8700000.0,-1,1.1371443552926348,0.5
-NS4_long_dated,0.035,NS4_long_dated_swap08,FXSwap,far,8700000.0,1,1.1174950086898758,1.5
-NS4_long_dated,0.035,NS4_long_dated_fwd09,FXForward,-,33400000.0,1,1.200744114144506,3.0
-NS4_long_dated,0.035,NS4_long_dated_fwd10,FXForward,-,19500000.0,-1,1.1302666991841601,0.75
-NS4_long_dated,0.035,NS4_long_dated_fwd11,FXForward,-,36000000.0,1,1.1129470006484314,0.5
-NS4_long_dated,0.035,NS4_long_dated_swap12,FXSwap,near,23100000.0,-1,1.1503650997294512,2.0
-NS4_long_dated,0.035,NS4_long_dated_swap12,FXSwap,far,23100000.0,1,1.206066650281756,4.0
-NS4_long_dated,0.035,NS4_long_dated_fwd13,FXForward,-,46500000.0,1,1.1680686512768184,4.0
-NS4_long_dated,0.035,NS4_long_dated_fwd14,FXForward,-,30200000.0,-1,1.2179630227644418,5.0
-NS4_long_dated,0.035,NS4_long_dated_fwd15,FXForward,-,25300000.0,1,1.2066125029182966,4.0
-NS4_long_dated,0.035,NS4_long_dated_swap16,FXSwap,near,7600000.0,1,1.0851265100527645,0.75
-NS4_long_dated,0.035,NS4_long_dated_swap16,FXSwap,far,7600000.0,-1,1.1107022243617046,1.5
-NS4_long_dated,0.035,NS4_long_dated_fwd17,FXForward,-,38500000.0,-1,1.1803829509302963,3.0
-NS4_long_dated,0.035,NS4_long_dated_fwd18,FXForward,-,14700000.0,1,1.1431211242009873,2.0
-NS4_long_dated,0.035,NS4_long_dated_swap19,FXSwap,near,29900000.0,-1,1.0979926167934624,1.0
-NS4_long_dated,0.035,NS4_long_dated_swap19,FXSwap,far,29900000.0,1,1.1445900831769111,1.5
-NS4_long_dated,0.035,NS4_long_dated_fwd20,FXForward,-,49000000.0,1,1.1416774948535113,1.0
-NS4_long_dated,0.035,NS4_long_dated_swap21,FXSwap,near,31900000.0,1,1.1397563757439046,0.5
-NS4_long_dated,0.035,NS4_long_dated_swap21,FXSwap,far,31900000.0,-1,1.1172108195671873,1.0
-NS4_long_dated,0.035,NS4_long_dated_fwd22,FXForward,-,32000000.0,1,1.182978659514622,4.0
-NS4_long_dated,0.035,NS4_long_dated_fwd23,FXForward,-,37700000.0,-1,1.1967533433641333,5.0
-NS4_long_dated,0.035,NS4_long_dated_swap24,FXSwap,near,43200000.0,-1,1.1188779289633348,2.0
-NS4_long_dated,0.035,NS4_long_dated_swap24,FXSwap,far,43200000.0,1,1.2088863672457886,5.0
-NS4_long_dated,0.035,NS4_long_dated_fwd25,FXForward,-,28500000.0,1,1.1302922606985348,0.5
-NS4_long_dated,0.035,NS4_long_dated_fwd26,FXForward,-,13000000.0,-1,1.12071131156154,0.5
-NS4_long_dated,0.035,NS4_long_dated_swap27,FXSwap,near,19400000.0,-1,1.1293316562151339,0.5
-NS4_long_dated,0.035,NS4_long_dated_swap27,FXSwap,far,19400000.0,1,1.2464343082834466,5.0
-NS4_long_dated,0.035,NS4_long_dated_fwd28,FXForward,-,25800000.0,1,1.2401972721862238,5.0
-NS4_long_dated,0.035,NS4_long_dated_fwd29,FXForward,-,38300000.0,1,1.1489661742645545,0.75
-NS4_long_dated,0.035,NS4_long_dated_swap30,FXSwap,near,29800000.0,-1,1.1791813515669163,4.0
-NS4_long_dated,0.035,NS4_long_dated_swap30,FXSwap,far,29800000.0,1,1.2399249103926226,5.0
-NS4_long_dated,0.035,NS4_long_dated_fwd31,FXForward,-,24200000.0,-1,1.1155490580146037,1.5
-NS4_long_dated,0.035,NS4_long_dated_fwd32,FXForward,-,21900000.0,-1,1.1064187821531746,0.75
-NS4_long_dated,0.035,NS4_long_dated_fwd33,FXForward,-,22400000.0,1,1.0785433725356228,0.5
-NS4_long_dated,0.035,NS4_long_dated_swap34,FXSwap,near,29900000.0,-1,1.1312467751021118,0.5
-NS4_long_dated,0.035,NS4_long_dated_swap34,FXSwap,far,29900000.0,1,1.0868951117639314,0.75
-NS4_long_dated,0.035,NS4_long_dated_fwd35,FXForward,-,7100000.0,1,1.1671803534308103,3.0
-NS4_long_dated,0.035,NS4_long_dated_fwd36,FXForward,-,19100000.0,1,1.1658029835240942,3.0
-NS4_long_dated,0.035,NS4_long_dated_fwd37,FXForward,-,29800000.0,1,1.196739232144374,5.0
-NS4_long_dated,0.035,NS4_long_dated_fwd38,FXForward,-,24000000.0,1,1.0992093435804695,0.5
-NS4_long_dated,0.035,NS4_long_dated_fwd39,FXForward,-,42300000.0,1,1.1453036350897794,0.75
-NS5_large_directional,0.05,NS5_large_directional_swap00,FXSwap,near,39100000.0,-1,1.1302901209788638,0.75
-NS5_large_directional,0.05,NS5_large_directional_swap00,FXSwap,far,39100000.0,1,1.1923042243034296,4.0
-NS5_large_directional,0.05,NS5_large_directional_fwd01,FXForward,-,43900000.0,1,1.1183445467892479,1.5
-NS5_large_directional,0.05,NS5_large_directional_fwd02,FXForward,-,46800000.0,1,1.124075683848967,2.0
-NS5_large_directional,0.05,NS5_large_directional_fwd03,FXForward,-,22700000.0,1,1.2234769009816424,5.0
-NS5_large_directional,0.05,NS5_large_directional_fwd04,FXForward,-,29000000.0,1,1.0833111767640315,0.5
-NS5_large_directional,0.05,NS5_large_directional_fwd05,FXForward,-,5100000.0,1,1.1639931557479282,1.5
-NS5_large_directional,0.05,NS5_large_directional_swap06,FXSwap,near,30400000.0,-1,1.0899751694052169,0.5
-NS5_large_directional,0.05,NS5_large_directional_swap06,FXSwap,far,30400000.0,1,1.1075967917558491,0.75
-NS5_large_directional,0.05,NS5_large_directional_fwd07,FXForward,-,33800000.0,1,1.2191093740370134,4.0
-NS5_large_directional,0.05,NS5_large_directional_fwd08,FXForward,-,25700000.0,1,1.1852257019992771,5.0
-NS5_large_directional,0.05,NS5_large_directional_swap09,FXSwap,near,29100000.0,-1,1.096684771711415,0.08333333333333333
-NS5_large_directional,0.05,NS5_large_directional_swap09,FXSwap,far,29100000.0,1,1.151958511171102,1.0
-NS5_large_directional,0.05,NS5_large_directional_swap10,FXSwap,near,37900000.0,-1,1.10280636809486,0.038461538461538464
-NS5_large_directional,0.05,NS5_large_directional_swap10,FXSwap,far,37900000.0,1,1.2035903893134994,5.0
-NS5_large_directional,0.05,NS5_large_directional_fwd11,FXForward,-,28800000.0,1,1.2142534920246157,5.0
-NS5_large_directional,0.05,NS5_large_directional_fwd12,FXForward,-,24700000.0,1,1.1045458716561571,0.019230769230769232
-NS5_large_directional,0.05,NS5_large_directional_swap13,FXSwap,near,34200000.0,-1,1.0750572751345568,0.038461538461538464
-NS5_large_directional,0.05,NS5_large_directional_swap13,FXSwap,far,34200000.0,1,1.1251386389822848,0.75
-NS5_large_directional,0.05,NS5_large_directional_fwd14,FXForward,-,45900000.0,1,1.1533498049613884,1.5
-NS5_large_directional,0.05,NS5_large_directional_fwd15,FXForward,-,24300000.0,1,1.1028716023766372,0.5
-NS5_large_directional,0.05,NS5_large_directional_swap16,FXSwap,near,39500000.0,-1,1.0975228838377051,0.25
-NS5_large_directional,0.05,NS5_large_directional_swap16,FXSwap,far,39500000.0,1,1.1235272887314542,0.5
-NS5_large_directional,0.05,NS5_large_directional_fwd17,FXForward,-,29800000.0,1,1.2039239097158516,5.0
-NS5_large_directional,0.05,NS5_large_directional_swap18,FXSwap,near,42400000.0,-1,1.1036414759388216,0.08333333333333333
-NS5_large_directional,0.05,NS5_large_directional_swap18,FXSwap,far,42400000.0,1,1.1291810273008707,0.5
-NS5_large_directional,0.05,NS5_large_directional_fwd19,FXForward,-,35100000.0,1,1.0724481005996698,0.25
-NS5_large_directional,0.05,NS5_large_directional_fwd20,FXForward,-,49600000.0,1,1.1028016341679752,0.5
-NS5_large_directional,0.05,NS5_large_directional_fwd21,FXForward,-,31600000.0,1,1.135588736150127,1.5
-NS5_large_directional,0.05,NS5_large_directional_swap22,FXSwap,near,32200000.0,-1,1.1070839658226892,0.75
-NS5_large_directional,0.05,NS5_large_directional_swap22,FXSwap,far,32200000.0,1,1.1867141150916876,5.0
-NS5_large_directional,0.05,NS5_large_directional_fwd23,FXForward,-,45900000.0,1,1.1030408058301429,1.5
-NS5_large_directional,0.05,NS5_large_directional_swap24,FXSwap,near,39700000.0,-1,1.0700528974576167,0.019230769230769232
-NS5_large_directional,0.05,NS5_large_directional_swap24,FXSwap,far,39700000.0,1,1.1128083622055027,1.5
-NS5_large_directional,0.05,NS5_large_directional_swap25,FXSwap,near,45400000.0,-1,1.069108925702335,0.08333333333333333
-NS5_large_directional,0.05,NS5_large_directional_swap25,FXSwap,far,45400000.0,1,1.104813053465212,0.5
-NS5_large_directional,0.05,NS5_large_directional_fwd26,FXForward,-,40900000.0,1,1.081844651052231,0.019230769230769232
-NS5_large_directional,0.05,NS5_large_directional_swap27,FXSwap,near,38500000.0,-1,1.131382271467328,2.0
-NS5_large_directional,0.05,NS5_large_directional_swap27,FXSwap,far,38500000.0,1,1.2061404964643994,4.0
-NS5_large_directional,0.05,NS5_large_directional_swap28,FXSwap,near,15400000.0,-1,1.1248709508383659,0.75
-NS5_large_directional,0.05,NS5_large_directional_swap28,FXSwap,far,15400000.0,1,1.1085317065867177,1.0
-NS5_large_directional,0.05,NS5_large_directional_fwd29,FXForward,-,49100000.0,-1,1.13763952810764,0.5
-NS5_large_directional,0.05,NS5_large_directional_fwd30,FXForward,-,25500000.0,1,1.0693549825618371,0.08333333333333333
-NS5_large_directional,0.05,NS5_large_directional_fwd31,FXForward,-,29000000.0,1,1.0789257192582946,0.5
-NS5_large_directional,0.05,NS5_large_directional_fwd32,FXForward,-,19600000.0,1,1.1548584884155046,3.0
-NS5_large_directional,0.05,NS5_large_directional_fwd33,FXForward,-,49000000.0,1,1.1695163835575833,3.0
-NS5_large_directional,0.05,NS5_large_directional_fwd34,FXForward,-,31100000.0,1,1.1164121933381261,1.5
-NS5_large_directional,0.05,NS5_large_directional_swap35,FXSwap,near,29900000.0,-1,1.0932553100803322,0.08333333333333333
-NS5_large_directional,0.05,NS5_large_directional_swap35,FXSwap,far,29900000.0,1,1.1613854327551043,2.0
-NS5_large_directional,0.05,NS5_large_directional_swap36,FXSwap,near,12400000.0,-1,1.1327121667758726,0.08333333333333333
-NS5_large_directional,0.05,NS5_large_directional_swap36,FXSwap,far,12400000.0,1,1.0921759411465164,0.75
-NS5_large_directional,0.05,NS5_large_directional_swap37,FXSwap,near,24600000.0,-1,1.114726923953159,2.0
-NS5_large_directional,0.05,NS5_large_directional_swap37,FXSwap,far,24600000.0,1,1.1680607190903758,4.0
-NS5_large_directional,0.05,NS5_large_directional_fwd38,FXForward,-,24300000.0,1,1.137591408632325,0.75
-NS5_large_directional,0.05,NS5_large_directional_fwd39,FXForward,-,48800000.0,1,1.1669300883399565,4.0
-NS5_large_directional,0.05,NS5_large_directional_fwd40,FXForward,-,5300000.0,1,1.0741447739214216,0.019230769230769232
-NS5_large_directional,0.05,NS5_large_directional_fwd41,FXForward,-,49400000.0,1,1.1752663831629773,3.0
-NS5_large_directional,0.05,NS5_large_directional_fwd42,FXForward,-,25400000.0,1,1.0806879205351512,0.5
-NS5_large_directional,0.05,NS5_large_directional_fwd43,FXForward,-,29100000.0,1,1.1073746104882258,0.25
-NS5_large_directional,0.05,NS5_large_directional_fwd44,FXForward,-,23200000.0,1,1.1250086317082202,0.019230769230769232
-NS5_large_directional,0.05,NS5_large_directional_swap45,FXSwap,near,34800000.0,-1,1.1037162527290596,1.5
-NS5_large_directional,0.05,NS5_large_directional_swap45,FXSwap,far,34800000.0,1,1.2174225945087283,4.0
-NS5_large_directional,0.05,NS5_large_directional_fwd46,FXForward,-,23200000.0,1,1.1917624851890545,4.0
-NS5_large_directional,0.05,NS5_large_directional_fwd47,FXForward,-,49000000.0,1,1.1603914842078757,3.0
-NS5_large_directional,0.05,NS5_large_directional_swap48,FXSwap,near,26400000.0,-1,1.1183172178967586,0.75
-NS5_large_directional,0.05,NS5_large_directional_swap48,FXSwap,far,26400000.0,1,1.1346608941965484,2.0
-NS5_large_directional,0.05,NS5_large_directional_fwd49,FXForward,-,48800000.0,1,1.0688849158746119,0.038461538461538464
+NS1_small_short,0-1y: 0.35%  1-3y: 0.50%  >3y: 0.65%,NS1_small_short_fwd00,FXForward,-,12900000.0,-1,1.1321727596297646,0.75
+NS1_small_short,0-1y: 0.35%  1-3y: 0.50%  >3y: 0.65%,NS1_small_short_fwd01,FXForward,-,22300000.0,1,1.079367162145575,0.038461538461538464
+NS1_small_short,0-1y: 0.35%  1-3y: 0.50%  >3y: 0.65%,NS1_small_short_fwd02,FXForward,-,16200000.0,-1,1.1069665550271055,0.5
+NS1_small_short,0-1y: 0.35%  1-3y: 0.50%  >3y: 0.65%,NS1_small_short_fwd03,FXForward,-,46800000.0,1,1.1165820624980995,0.019230769230769232
+NS1_small_short,0-1y: 0.35%  1-3y: 0.50%  >3y: 0.65%,NS1_small_short_fwd04,FXForward,-,27900000.0,1,1.095597015716597,0.019230769230769232
+NS1_small_short,0-1y: 0.35%  1-3y: 0.50%  >3y: 0.65%,NS1_small_short_fwd05,FXForward,-,43300000.0,1,1.1205379266265436,0.75
+NS1_small_short,0-1y: 0.35%  1-3y: 0.50%  >3y: 0.65%,NS1_small_short_fwd06,FXForward,-,11100000.0,1,1.116545753533747,0.08333333333333333
+NS1_small_short,0-1y: 0.35%  1-3y: 0.50%  >3y: 0.65%,NS1_small_short_swap07,FXSwap,near,19100000.0,-1,1.1225952658277285,0.25
+NS1_small_short,0-1y: 0.35%  1-3y: 0.50%  >3y: 0.65%,NS1_small_short_swap07,FXSwap,far,19100000.0,1,1.0869339685531874,0.75
+NS1_small_short,0-1y: 0.35%  1-3y: 0.50%  >3y: 0.65%,NS1_small_short_fwd08,FXForward,-,35100000.0,1,1.136510409633581,0.5
+NS1_small_short,0-1y: 0.35%  1-3y: 0.50%  >3y: 0.65%,NS1_small_short_fwd09,FXForward,-,35700000.0,1,1.0818615473122302,0.038461538461538464
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_swap00,FXSwap,near,43500000.0,1,1.121457831453826,0.5
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_swap00,FXSwap,far,43500000.0,-1,1.1124038955770899,2.0
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_swap01,FXSwap,near,30900000.0,-1,1.1132958659149839,0.08333333333333333
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_swap01,FXSwap,far,30900000.0,1,1.105509658083797,0.75
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd02,FXForward,-,43100000.0,-1,1.106495563457246,0.08333333333333333
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd03,FXForward,-,46800000.0,1,1.14016471973692,3.0
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_swap04,FXSwap,near,48300000.0,-1,1.109217195404911,1.0
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_swap04,FXSwap,far,48300000.0,1,1.172918204786184,2.0
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd05,FXForward,-,10200000.0,-1,1.1207699124447708,0.08333333333333333
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd06,FXForward,-,37200000.0,-1,1.1280076845308338,3.0
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd07,FXForward,-,39600000.0,-1,1.1146857293676977,0.25
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd08,FXForward,-,32500000.0,1,1.1309421787944667,0.25
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd09,FXForward,-,45000000.0,1,1.123833272480838,0.25
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd10,FXForward,-,41000000.0,1,1.0977168046658274,0.08333333333333333
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_swap11,FXSwap,near,31800000.0,-1,1.1600449671730784,1.5
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_swap11,FXSwap,far,31800000.0,1,1.1508470382076532,3.0
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd12,FXForward,-,19800000.0,-1,1.1600577478316914,1.5
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd13,FXForward,-,25800000.0,1,1.0967913145197818,0.25
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd14,FXForward,-,49500000.0,-1,1.1054572275429557,0.08333333333333333
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_swap15,FXSwap,near,41100000.0,-1,1.0893665582628678,0.75
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_swap15,FXSwap,far,41100000.0,1,1.1198469984227242,1.5
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd16,FXForward,-,36000000.0,-1,1.175684971663455,3.0
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd17,FXForward,-,34500000.0,1,1.1117815210066095,1.0
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd18,FXForward,-,49100000.0,1,1.1297714990286987,3.0
+NS2_medium_mixed,0-1y: 0.70%  1-3y: 1.00%  >3y: 1.30%,NS2_medium_mixed_fwd19,FXForward,-,15100000.0,-1,1.1551315784638465,3.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap00,FXSwap,near,37300000.0,-1,1.128160782554431,0.25
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap00,FXSwap,far,37300000.0,1,1.082978365052179,0.5
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap01,FXSwap,near,42800000.0,-1,1.1192683645995165,0.019230769230769232
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap01,FXSwap,far,42800000.0,1,1.205471427896376,4.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd02,FXForward,-,48900000.0,-1,1.1027095009141537,0.25
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap03,FXSwap,near,21500000.0,1,1.1074634372216432,1.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap03,FXSwap,far,21500000.0,-1,1.122051169322746,2.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd04,FXForward,-,23400000.0,-1,1.1089934476661072,0.5
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap05,FXSwap,near,32300000.0,-1,1.0892821866111335,0.038461538461538464
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap05,FXSwap,far,32300000.0,1,1.1032624086643863,1.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd06,FXForward,-,43100000.0,1,1.1338989137441893,1.5
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd07,FXForward,-,24700000.0,-1,1.1085077382657815,1.5
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd08,FXForward,-,22100000.0,1,1.228522679566226,5.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd09,FXForward,-,35300000.0,-1,1.1123458322948248,0.08333333333333333
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd10,FXForward,-,26300000.0,1,1.158254403836902,3.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd11,FXForward,-,30100000.0,-1,1.1021356068617663,0.08333333333333333
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd12,FXForward,-,42900000.0,-1,1.1244971486196198,0.08333333333333333
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd13,FXForward,-,49900000.0,1,1.157839764436165,3.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd14,FXForward,-,46100000.0,1,1.096817608057084,1.5
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd15,FXForward,-,36000000.0,1,1.140040775862332,1.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd16,FXForward,-,5500000.0,-1,1.097374023504563,0.038461538461538464
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd17,FXForward,-,12100000.0,1,1.1847680946928316,4.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd18,FXForward,-,47600000.0,-1,1.1094466032302666,0.038461538461538464
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd19,FXForward,-,6100000.0,-1,1.1971713399738848,4.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap20,FXSwap,near,37200000.0,1,1.1291773471937627,0.038461538461538464
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap20,FXSwap,far,37200000.0,-1,1.12298814530095,0.75
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd21,FXForward,-,11400000.0,-1,1.1110526552371853,0.019230769230769232
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd22,FXForward,-,31100000.0,-1,1.1117923918877535,0.75
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap23,FXSwap,near,9300000.0,-1,1.1120193377273306,0.25
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap23,FXSwap,far,9300000.0,1,1.148038112995064,0.75
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap24,FXSwap,near,44300000.0,1,1.0987545493506865,0.019230769230769232
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap24,FXSwap,far,44300000.0,-1,1.0683770697454125,0.038461538461538464
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap25,FXSwap,near,40500000.0,-1,1.086067454337203,0.08333333333333333
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap25,FXSwap,far,40500000.0,1,1.109199067935155,2.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd26,FXForward,-,37100000.0,1,1.147938843536687,1.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd27,FXForward,-,9000000.0,1,1.1282678124377743,2.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap28,FXSwap,near,21800000.0,1,1.0928645528736203,0.5
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_swap28,FXSwap,far,21800000.0,-1,1.1265026436860883,3.0
+NS3_balanced,0-1y: 1.40%  1-3y: 2.00%  >3y: 2.60%,NS3_balanced_fwd29,FXForward,-,38100000.0,-1,1.1730694204671774,2.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd00,FXForward,-,43100000.0,1,1.117967552710732,1.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap01,FXSwap,near,21900000.0,1,1.1258664350106502,1.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap01,FXSwap,far,21900000.0,-1,1.115762534161906,1.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap02,FXSwap,near,31600000.0,-1,1.108729995972777,1.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap02,FXSwap,far,31600000.0,1,1.1386693485438342,2.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap03,FXSwap,near,32200000.0,1,1.146779829800873,1.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap03,FXSwap,far,32200000.0,-1,1.1463809779892438,2.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap04,FXSwap,near,34900000.0,-1,1.0883107886938768,0.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap04,FXSwap,far,34900000.0,1,1.0926259739174902,1.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd05,FXForward,-,20500000.0,1,1.1191827142808808,2.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap06,FXSwap,near,41100000.0,-1,1.1370026049741564,2.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap06,FXSwap,far,41100000.0,1,1.1641745450844145,3.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd07,FXForward,-,15700000.0,1,1.1425275744956367,1.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap08,FXSwap,near,8700000.0,-1,1.1363387787208101,0.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap08,FXSwap,far,8700000.0,1,1.1143207634058379,1.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd09,FXForward,-,33400000.0,1,1.1929825003016485,3.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd10,FXForward,-,19500000.0,-1,1.1289333104329429,0.75
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd11,FXForward,-,36000000.0,1,1.1121585659829185,0.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap12,FXSwap,near,23100000.0,-1,1.1457152956066625,2.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap12,FXSwap,far,23100000.0,1,1.1954521178626674,4.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd13,FXForward,-,46500000.0,1,1.1577885373512715,4.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd14,FXForward,-,30200000.0,-1,1.204530736460938,5.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd15,FXForward,-,25300000.0,1,1.195993166477386,4.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap16,FXSwap,near,7600000.0,1,1.0838463737068946,0.75
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap16,FXSwap,far,7600000.0,-1,1.107547273985878,1.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd17,FXForward,-,38500000.0,-1,1.172752951712402,3.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd18,FXForward,-,14700000.0,1,1.1385006004060576,2.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap19,FXSwap,near,29900000.0,-1,1.0961242827312678,1.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap19,FXSwap,far,29900000.0,1,1.1413388743165331,1.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd20,FXForward,-,49000000.0,1,1.1397348270076155,1.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap21,FXSwap,near,31900000.0,1,1.1389489487627886,0.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap21,FXSwap,far,31900000.0,-1,1.1153097839892383,1.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd22,FXForward,-,32000000.0,1,1.172567323350427,4.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd23,FXForward,-,37700000.0,-1,1.183554967680891,5.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap24,FXSwap,near,43200000.0,-1,1.1143553967618496,2.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap24,FXSwap,far,43200000.0,1,1.195554182696875,5.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd25,FXForward,-,28500000.0,1,1.129491538292188,0.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd26,FXForward,-,13000000.0,-1,1.1199173764976487,0.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap27,FXSwap,near,19400000.0,-1,1.1285316143208637,0.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap27,FXSwap,far,19400000.0,1,1.232688026849243,5.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd28,FXForward,-,25800000.0,1,1.2265197758078696,5.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd29,FXForward,-,38300000.0,1,1.147610725525421,0.75
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap30,FXSwap,near,29800000.0,-1,1.1688034353205232,4.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap30,FXSwap,far,29800000.0,1,1.2262504177520845,5.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd31,FXForward,-,24200000.0,-1,1.1123803402046986,1.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd32,FXForward,-,21900000.0,-1,1.105113527066633,0.75
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd33,FXForward,-,22400000.0,1,1.0777793101115622,0.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap34,FXSwap,near,29900000.0,-1,1.1304453764980267,0.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_swap34,FXSwap,far,29900000.0,1,1.0856128889780834,0.75
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd35,FXForward,-,7100000.0,1,1.1596356958459137,3.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd36,FXForward,-,19100000.0,1,1.1582672292627358,3.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd37,FXForward,-,29800000.0,1,1.1835410120865,5.0
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd38,FXForward,-,24000000.0,1,1.0984306409552504,0.5
+NS4_long_dated,0-1y: 2.50%  1-3y: 3.50%  >3y: 4.50%,NS4_long_dated_fwd39,FXForward,-,42300000.0,1,1.1439525070906449,0.75
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap00,FXSwap,near,39100000.0,-1,1.1289567045966833,0.75
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap00,FXSwap,far,39100000.0,1,1.1818108143087758,4.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd01,FXForward,-,43900000.0,1,1.1151678883916978,1.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd02,FXForward,-,46800000.0,1,1.1195321421939595,2.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd03,FXForward,-,22700000.0,1,1.2099838049577516,5.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd04,FXForward,-,29000000.0,1,1.082543736728881,0.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd05,FXForward,-,5100000.0,1,1.1606868324475523,1.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap06,FXSwap,near,30400000.0,-1,1.0892030084599007,0.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap06,FXSwap,far,30400000.0,1,1.1062901469576987,0.75
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd07,FXForward,-,33800000.0,1,1.2083800532568492,4.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd08,FXForward,-,25700000.0,1,1.1721544587300101,5.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap09,FXSwap,near,29100000.0,-1,1.0965860004470165,0.08333333333333333
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap09,FXSwap,far,29100000.0,1,1.1499983492431092,1.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap10,FXSwap,near,37900000.0,-1,1.1027623450053643,0.038461538461538464
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap10,FXSwap,far,37900000.0,1,1.1903166113750607,5.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd11,FXForward,-,28800000.0,1,1.2008621162233337,5.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd12,FXForward,-,24700000.0,1,1.1045242250120424,0.019230769230769232
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap13,FXSwap,near,34200000.0,-1,1.0750143597651813,0.038461538461538464
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap13,FXSwap,far,34200000.0,1,1.1238112998632417,0.75
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd14,FXForward,-,45900000.0,1,1.1500737141057014,1.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd15,FXForward,-,24300000.0,1,1.1020903053315696,0.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap16,FXSwap,near,39500000.0,-1,1.0971859559249044,0.25
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap16,FXSwap,far,39500000.0,1,1.122731358771115,0.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd17,FXForward,-,29800000.0,1,1.1906464535528292,5.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap18,FXSwap,near,42400000.0,-1,1.1035420781293208,0.08333333333333333
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap18,FXSwap,far,42400000.0,1,1.1283810921152375,0.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd19,FXForward,-,35100000.0,1,1.0721188703800149,0.25
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd20,FXForward,-,49600000.0,1,1.102020386689833,0.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd21,FXForward,-,31600000.0,1,1.1323630956217126,1.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap22,FXSwap,near,32200000.0,-1,1.1057779260112477,0.75
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap22,FXSwap,far,32200000.0,1,1.1736264568817192,5.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd23,FXForward,-,45900000.0,1,1.0999076177185356,1.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap24,FXSwap,near,39700000.0,-1,1.0700319267991318,0.019230769230769232
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap24,FXSwap,far,39700000.0,1,1.1096474293437892,1.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap25,FXSwap,near,45400000.0,-1,1.0690126380150293,0.08333333333333333
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap25,FXSwap,far,45400000.0,1,1.1040303810560537,0.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd26,FXForward,-,40900000.0,1,1.0818234493015844,0.019230769230769232
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap27,FXSwap,near,38500000.0,-1,1.126809196404849,2.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap27,FXSwap,far,38500000.0,1,1.1955253141287414,4.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap28,FXSwap,near,15400000.0,-1,1.1235439275141348,0.75
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap28,FXSwap,far,15400000.0,1,1.1066454393069916,1.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd29,FXForward,-,49100000.0,-1,1.1368336007451552,0.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd30,FXForward,-,25500000.0,1,1.0692586727137907,0.08333333333333333
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd31,FXForward,-,29000000.0,1,1.0781613859719108,0.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd32,FXForward,-,19600000.0,1,1.147393479405976,3.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd33,FXForward,-,49000000.0,1,1.1619566258663814,3.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd34,FXForward,-,31100000.0,1,1.1132410237917847,1.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap35,FXSwap,near,29900000.0,-1,1.093156847685237,0.08333333333333333
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap35,FXSwap,far,29900000.0,1,1.1566910841742568,2.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap36,FXSwap,near,12400000.0,-1,1.1326101507583277,0.08333333333333333
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap36,FXSwap,far,12400000.0,1,1.0908874885049176,0.75
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap37,FXSwap,near,24600000.0,-1,1.1102211702163671,2.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap37,FXSwap,far,24600000.0,1,1.157780674975606,4.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd38,FXForward,-,24300000.0,1,1.1362493788363073,0.75
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd39,FXForward,-,48800000.0,1,1.1566599948500147,4.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd40,FXForward,-,5300000.0,1,1.0741237230712528,0.019230769230769232
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd41,FXForward,-,49400000.0,1,1.1676694574557025,3.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd42,FXForward,-,25400000.0,1,1.0799223388689492,0.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd43,FXForward,-,29100000.0,1,1.1070346581995814,0.25
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd44,FXForward,-,23200000.0,1,1.124986584039489,0.019230769230769232
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap45,FXSwap,near,34800000.0,-1,1.1005811460101056,1.5
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap45,FXSwap,far,34800000.0,1,1.20670811899104,4.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd46,FXForward,-,23200000.0,1,1.1812738430133192,4.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd47,FXForward,-,49000000.0,1,1.1528907098956243,3.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap48,FXSwap,near,26400000.0,-1,1.1169979260873895,0.75
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_swap48,FXSwap,far,26400000.0,1,1.1300745668600853,2.0
+NS5_large_directional,0-1y: 3.60%  1-3y: 5.00%  >3y: 6.40%,NS5_large_directional_fwd49,FXForward,-,48800000.0,1,1.068842246900553,0.038461538461538464

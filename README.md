@@ -1,9 +1,9 @@
-# CVA proxy pricing for incoming FX trades
+# CVA proxy pricing for incoming FX trades — three-factor model
 
 Numerical model for a Bachelor's thesis in quantitative finance.  It compares two
 fast **proxy** methods for quoting the CVA charge of a *new* incoming FX trade
 against a fully-simulated **true** benchmark, for netting sets of FX forwards and
-FX swaps.
+FX swaps, under a three-factor market model with stochastic interest rates.
 
 Everything is synthetic and self-generated: no bank data, no downloads, one fixed
 random seed.
@@ -30,62 +30,124 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Runtime is about one minute. Every number printed to the console is also written
-to `results/`.
+Runtime is about two minutes. The model validation suite runs **first** and the
+script refuses to report any CVA if a check fails. Every number printed to the
+console is also written to `results/`.
 
 To change the experiment, edit **`cva/config.py`** — it holds the seed, the path
-count, the time grid, the market parameters, the five netting-set specifications
-and the interpolation grid. Nothing else needs touching.
+count, the time grid, the curves, all three-factor parameters, the five
+netting-set specifications and the interpolation grid. Nothing else needs
+touching.
 
 ---
 
-## Model
+## Market model
 
-* **Market** — one currency pair, EUR/USD quoted as USD per EUR. Two flat
-  risk-free curves (EUR 2%, USD 4%) and a Garman-Kohlhagen spot process, i.e.
-  geometric Brownian motion with drift `r_USD − r_EUR` under the USD risk-neutral
-  measure and 10% volatility. USD is the reporting currency.
-* **Products** — FX forwards and FX swaps only. Both are *linear*, so they are
-  valued **analytically** at every scenario and time step from covered interest
-  rate parity, `V(t) = φ·N·[DF_EUR(t,T)·S(t) − K·DF_USD(t,T)]`. An FX swap is two
-  such legs in opposite directions. This is a **single, non-nested** Monte Carlo:
-  outer risk-factor paths plus closed-form repricing at each node.
-* **Portfolios** — 5 netting sets (5 counterparties) holding 10 / 20 / 30 / 40 /
-  50 trades, maturities from 1 week to 5 years, with the tenor mix and the
-  long/short balance varying across the sets so that portfolio-size and
-  composition effects are visible. Trades are seasoned (strike = fair forward
-  ±3%) so the books carry a non-zero mark-to-market today.
-* **Collateral** — none. All netting sets are uncollateralised (no CSA), so
-  netting at counterparty level is the only risk mitigant.
-* **Default** — hazard-rate / survival-curve approach, `Q(t) = exp(−λt)`, with a
-  constant λ per counterparty from 0.5% to 5.0%. Recovery `R = 40%`.
-* **CVA** — `CVA = (1−R) · Σᵢ DF(tᵢ) · EE(tᵢ) · PD(tᵢ₋₁, tᵢ)`, where
-  `EE(tᵢ) = E[max(V_netted(tᵢ), 0)]`.
+Three correlated risk factors under the **domestic (USD) risk-neutral measure**:
 
-Defaults: seed 42, 20,000 paths, 40 exposure dates out to 5 years.
+```
+dr_d = [θ_d(t) − a_d·r_d] dt + σ_d dW_d                              (Hull-White, USD)
+dr_f = [θ_f(t) − a_f·r_f − ρ_fS·σ_f·σ_S] dt + σ_f dW_f               (Hull-White, EUR)
+dS   = (r_d − r_f)·S dt + σ_S·S dW_S                                 (FX spot)
+```
+
+* **Quanto adjustment.** The `−ρ_fS σ_f σ_S` term in the foreign drift is the
+  change of measure from the foreign to the domestic risk-neutral measure.
+  Omitting it breaks covered interest rate parity in the simulation — the
+  validation suite measures the resulting bias and matches it against the closed
+  form.
+* **Exact curve fit.** `θ(t)` is never formed explicitly. The short rate is
+  decomposed as `r = x + α` with `x` a mean-zero OU factor and
+  `α(t) = f(0,t) + (σ²/2a²)(1−e^{−at})²`, and bonds are rebuilt from
+  `P(t,T) = A(t,T)·exp(−B(t,T)·r(t))` with the exact-fit `A(t,T)`
+  (Brigo–Mercurio 3.39). The model reprices today's curves by construction.
+* **Initial curves** are Nelson-Siegel — a smooth parametric form, chosen because
+  the Hull-White fit needs the *instantaneous forward* `f(0,t)`, and
+  differentiating an interpolated pillar curve gives a jagged forward curve.
+* **Valuation stays analytic.** `V = φ·N·[S·P_f(t,T) − K·P_d(t,T)]`, evaluated in
+  closed form at every scenario node. This is a **single, non-nested** Monte
+  Carlo under both rate models.
+* **Discretisation.** The only one in the model: the FX drift needs `∫r dt` per
+  step, split into `∫α dt` (analytic, closed form) plus `∫x dt` (trapezoidal).
+  Integrating the deterministic part exactly is what makes the σ→0 limit exact
+  to machine precision rather than merely accurate.
+
+### The switch
+
+`RATE_MODEL = "stochastic" | "deterministic"`. Deterministic mode simply forces
+`σ_d = σ_f = 0`; everything else — curves, FX vol, seed, trades — is shared, so
+any difference between the two runs is attributable to rate volatility alone.
+`main.py` runs **both** and reports them side by side.
+
+---
+
+## Why the upgrade was needed
+
+An FX swap holds two legs in opposite directions, so its spot delta is the
+*difference* of two foreign discount factors at nearby maturities — a few percent
+of a comparable forward. Its rate deltas do not cancel, because the two legs
+discount over different horizons. Measured on the incoming 1y/3y swap:
+
+| | mean pre-settlement EE | peak pre-settlement EE | post-settlement EE |
+|---|---|---|---|
+| deterministic rates | USD 48k | USD 88k | USD 2.80m |
+| stochastic rates | USD 188k | USD 348k | USD 2.68m |
+| **ratio** | **3.90×** | **3.95×** | 0.96× |
+
+The plain 3y forward moves by 0.95× throughout — it is a spot product under both
+models. The variance decomposition puts numbers on the mechanism: before
+settlement the swap is **78% rates / 7% FX**; after settlement it flips to
+**107% FX / 2% rates** (shares net to 100% including a signed cross term).
+
+---
+
+## Validation suite (`cva/validation.py`)
+
+Runs before anything else. All five pass.
+
+| Test | What it checks |
+|---|---|
+| **1. Curve reproduction** | `E[D_d(0,T)] = P_d(0,T)` for USD; `E[D_d(0,T)·S(T)] = S(0)·P_f(0,T)` for EUR (under the domestic measure the naive `E[exp(−∫r_f)]` is *not* the right identity), plus a forward-starting foreign bond check. Passes within 3 MC standard errors at every tenor. |
+| **2. FX martingale** | A forward struck at `F(0,T)` prices to zero. Largest deviation 13 bp of the forward, inside the 3-σ band. |
+| **3. Quanto** | Run at `ρ_fS = 0` and `−0.40`, each **with and without** the adjustment on **common random numbers**. With it, the forward is fair; without it the bias is **28.64 bp observed vs 28.60 bp predicted** by the closed form. Common random numbers are essential here — the bias is smaller than the raw MC noise (22 bp) and only the paired difference resolves it. |
+| **4. Zero-vol degeneracy** | Deterministic mode ≡ `σ_rate = 0`; flat curves reproduce the closed-form single-factor GBM base model, its `exp(−r t)` discounting and its `exp(−r(T−t))` bonds. All to **≤ 3e-15**. |
+| **5. Convergence** | CVA vs path count with 95% intervals. Standard-error scaling exponent **−0.510** against the theoretical −0.5; the production estimate sits inside the 40,000-path interval. |
 
 ---
 
 ## Interpolation
 
-Both proxies avoid repricing the incoming trade on all 20,000 paths. They build
-an interpolant of the pricing function `V(t, S)` on a coarse **(time, spot)
-tensor grid**, evaluate the exact analytic price only at the grid nodes, and read
-the interpolant off at every `(tᵢ, S_path)` pair.
+Both proxies avoid repricing the incoming trade on every path. They build an
+interpolant of the pricing function on a coarse tensor grid over
+**(time) × (state)**, evaluate the exact analytic price only at the nodes, and
+read the interpolant off at every simulated point.
 
-Two methods sit behind one interface — `method="linear"` (the base case) and
-`method="chebyshev"` (the optional module). They share only the grid plumbing.
+The state was **1-dimensional** under deterministic rates (the spot alone) and is
+**3-dimensional** under the three-factor model (`S, x_d, x_f`). With `n` nodes per
+state dimension the grid holds `n_time × n³` nodes:
 
-**Why the grid is two-dimensional.** For a linear FX product under deterministic
-rates the value is *exactly affine in the spot*, so interpolating in `S` alone
-would be exact to machine precision and the comparison would be vacuous. The
-genuine approximation comes from coarsening the **time** dimension, where the
-discount factors are exponential and a swap leg drops out.
+| nodes per state dim | 1-D grid | 3-D grid | growth |
+|---|---|---|---|
+| 2 | 32 | 128 | 4× |
+| 3 | 48 | 432 | 9× |
+| 4 | 64 | 1,024 | 16× |
+| 5 | 80 | 2,000 | 25× |
+| 6 | 96 | 3,456 | 36× |
+
+Two methods sit behind one interface — `method="linear"` (base case) and
+`method="chebyshev"` (the optional tensor module).
+
+**The spot dimension is free.** `V` is *exactly affine in S* even under
+stochastic rates, so two nodes reproduce it to machine precision. In the 1-D
+sweep both methods are perfectly flat in the node count — all their residual
+error comes from the time dimension. All genuine state curvature lives in `x_d`
+and `x_f`, where the bond prices are exponential.
 
 **Maturity cut-offs.** By default each leg is interpolated on its own smooth
-domain `[0, T_leg]` and the settlement jump is applied analytically, because that
-jump is known exactly and free to apply. `split_legs=False` puts the whole trade
-on one domain — a deliberately naive variant kept for the sensitivity study.
+domain `[0, T_leg]` and the settlement jump is applied analytically.
+`split_legs=False` puts the whole trade on one domain — the naive variant kept
+for the sensitivity study, where both methods lose ~12% and Chebyshev loses
+*more* than linear, because a global polynomial cannot represent a discontinuity.
 
 ---
 
@@ -93,89 +155,115 @@ on one domain — a deliberately naive variant kept for the sensitivity study.
 
 | File | Concern |
 |---|---|
-| `cva/config.py` | every parameter of the experiment |
-| `cva/market.py` | flat curves, discount factors, GBM spot simulation |
-| `cva/instruments.py` | `FXForward`, `FXSwap`, analytic valuation |
+| `cva/config.py` | every parameter, each labelled market convention / modelling choice / synthetic |
+| `cva/curves.py` | Nelson-Siegel initial zero curves: `P(0,t)`, `f(0,t)`, `∫f` |
+| `cva/hullwhite.py` | `B(t,T)`, exact-fit `A(t,T)`, `α(t)`, `∫α`, exact OU transition, quanto shift |
+| `cva/market.py` | the three-factor model, Cholesky correlation, simulation |
+| `cva/validation.py` | the five mandatory tests |
+| `cva/instruments.py` | `FXForward`, `FXSwap`, analytic valuation and the three analytic deltas |
 | `cva/portfolio.py` | the 5 netting sets, the incoming test trades, CVA-delta sizing |
 | `cva/scenarios.py` | scenario value matrices, netting-set aggregation |
-| `cva/credit.py` | survival curve, marginal default probabilities |
-| `cva/exposure.py` | EE and PFE from a scenario matrix |
+| `cva/credit.py` | piecewise-constant hazard term structure, survival, marginal PDs |
+| `cva/exposure.py` | EE, discounted EE, PFE, MC standard errors |
 | `cva/cva_engine.py` | the CVA formula, true CVA, true incremental CVA |
-| `cva/interpolation.py` | the (time, spot) tensor interpolant, linear and Chebyshev |
+| `cva/interpolation.py` | the N-dimensional tensor interpolant, linear and Chebyshev |
 | `cva/proxies.py` | standalone proxy, incremental proxy, full-re-simulation benchmark |
+| `cva/risk_split.py` | FX vs rates variance decomposition |
 | `cva/metrics.py` | signed / absolute / relative error, speed-up |
-| `cva/plots.py` | all six figures |
+| `cva/plots.py` | all ten figures |
 | `main.py` | orchestration and reporting only |
+
+---
+
+## Model parameters
+
+| Parameter | Value | Status |
+|---|---|---|
+| Curve form | Nelson-Siegel | **Market convention**; coefficients synthetic |
+| USD curve | β₀=4.0%, β₁=0.5%, β₂=−0.8%, τ=1.5 | Synthetic |
+| EUR curve | β₀=2.2%, β₁=0.4%, β₂=−0.6%, τ=1.5 | Synthetic; keeps the ~2% differential of the base model |
+| `a_d` / `a_f` | 0.05 / 0.03 | Modelling choice; 1F-HW calibrations land in 0.01–0.10 |
+| `σ_d` / `σ_f` | 80bp / 60bp | Modelling choice; typical 1F-HW range 50–120bp |
+| `σ_S` | 10% | Unchanged from the base model, so old-vs-new is about rates |
+| `ρ_dS` | −0.15 | USD rates ↑ → USD strengthens → S falls |
+| `ρ_fS` | +0.25 | EUR rates ↑ → EUR strengthens → S rises |
+| `ρ_df` | +0.35 | USD/EUR rates co-move |
+| Hazard | piecewise constant, upward sloping, breaks at 1y/3y | Modelling choice; IG credit curves normally slope up |
+| `R` | 40% | **Market convention**, senior unsecured |
+| Paths / dates | 10,000 / 40 | Reduced from 20,000: three factors and an `n³` grid cost more |
 
 ---
 
 ## Incoming test trades
 
-Priced against each of the five netting sets:
-
 | Key | What it is |
 |---|---|
 | `new_fwd` | plain 3y forward, long EUR 50m — risk-adding |
-| `new_swap` | 1y/3y FX swap, EUR 50m — its near leg dies inside the interpolation domain |
-| `offset_fwd` | **risk-reducing** forward, built to cancel 50% of the netting set's CVA spot delta. Its incremental CVA is negative while the standalone charge stays positive — the key showcase |
+| `new_swap` | 1y/3y FX swap, EUR 50m — near leg dies inside the interpolation domain; rates-driven before settlement |
+| `offset_fwd` | **risk-reducing** forward, built to cancel 50% of the netting set's CVA spot delta. Incremental CVA negative, standalone positive — the key showcase |
 | `small_fwd` | 6m forward, EUR 5m — small reference trade |
 
-The offsetting trade is sized from the **CVA delta**
-`dCVA/dS = (1−R)·Σᵢ DF(tᵢ)·PDᵢ·E[1{V>0}·dV/dS]`, not from raw notional: a book can
+The offsetting trade is sized from `dCVA/dS(0)`, not from raw notional: a book can
 be net short EUR in value terms while its CVA is driven by long-EUR positions at
-the near dates, where the default and discount weights are largest. Its tenor is
-capped at the book's longest maturity, so it always has something to net against.
+the near dates, where the default and discount weights are largest. **Both rate
+models price the identical trade objects**, so the comparison is like-for-like.
 
 ---
 
 ## Outputs
 
-### `results/cva_results.csv`
-One row per (netting set × incoming trade × interpolation method) — 40 rows.
+### CSVs
 
-| Column group | Meaning |
+| File | Contents |
 |---|---|
-| `portfolio_cva`, `portfolio_mtm_today` | the existing book, before the new trade |
-| `true_incremental_cva` | ground truth, full re-simulation |
-| `standalone_proxy_cva`, `incremental_proxy_cva` | the two proxy quotes |
-| `incremental_exact_cva` | diagnostic: incremental with the new trade repriced *exactly* |
-| `*_signed_error` | proxy − truth. **Positive = overcharging** (trade lost to competitors), **negative = undercharging** (loss borne by the bank) |
-| `*_abs_error`, `*_rel_error`, `*_direction` | magnitude and the over/under label |
-| `interpolation_only_error` | incremental proxy − exact incremental: the pure interpolation error |
-| `netting_exactness_check` | exact incremental − truth. ~0 by construction; proves netting in the incremental proxy is exact |
-| `*_seconds`, `*_speedup` | wall-clock time per pricing request (best of 3) and speed-up vs full re-simulation |
-| `proxy_exact_evaluations`, `full_resim_evaluations` | hardware-independent cost: number of exact analytic prices computed |
+| `cva_results.csv` | one row per (rate model × netting set × trade × interpolation method) — 80 rows |
+| `sensitivity_results.csv` | node-count sweep (1-D and 3-D, both methods) and the swap domain-handling comparison |
+| `rate_model_comparison.csv` | deterministic vs stochastic, averaged by trade type |
+| `risk_decomposition.csv` | FX / rates / cross variance shares before and after settlement |
+| `validation_results.csv` | every validation check with estimate, target, tolerance, pass/fail |
+| `mc_convergence.csv` | CVA and confidence interval by path count |
+| `portfolios.csv` | every trade of every netting set, leg by leg |
 
-### `results/sensitivity_results.csv`
-The node-count sweep (3–16 time nodes × both methods) and the swap
-domain-handling comparison.
-
-### `results/portfolios.csv`
-Every trade of every netting set, leg by leg — for the thesis appendix.
+Key columns in `cva_results.csv`: `*_signed_error` (**positive = overcharging**,
+negative = undercharging), `interpolation_only_error` (the pure interpolation
+error), `netting_exactness_check` (~0 by construction — proves netting in the
+incremental proxy is exact), `*_seconds` / `*_speedup`, and
+`proxy_exact_evaluations` vs `full_resim_evaluations` (the hardware-independent
+cost measure).
 
 ### Figures
 
 | File | Shows |
 |---|---|
-| `ee_profiles.png` | expected exposure of all five netting sets over time, plus EE vs PFE for one set |
-| `cva_comparison.png` | standalone vs incremental vs true, per test trade, per netting set — negative bars highlighted |
+| `swap_exposure_rate_models.png` | **the motivating chart** — swap exposure under both rate models, with the forward as a control |
+| `risk_decomposition.png` | FX vs rates variance shares, before and after near-leg settlement |
+| `ee_profiles.png` | expected exposure of all five netting sets, plus EE vs PFE |
+| `cva_comparison.png` | standalone vs incremental vs true, per trade, per netting set |
 | `signed_errors.png` | signed error above/below the zero line, one panel per proxy |
 | `accuracy_vs_time.png` | error against wall-clock cost per pricing request |
-| `interpolation_convergence.png` | linear vs Chebyshev convergence, and what a discontinuity does to it |
+| `interpolation_convergence.png` | 1-D vs 3-D convergence, the same errors priced in repricings, and the naive-domain failure |
 | `error_vs_size.png` | standalone error against netting-set size, absolute and relative |
+| `rate_model_comparison.png` | deterministic vs stochastic, side by side |
+| `mc_convergence.png` | CVA and standard error against path count |
 
 ---
 
 ## Reading the timings
 
-The wall-clock speed-ups here (roughly 1.5× to 8×, growing with netting-set size)
-**understate** what the proxies buy in practice. In this model the "expensive"
-full repricing is itself only a couple of vectorised NumPy expressions per trade,
-so the proxy's advantage is limited by the fixed cost of touching the
-20,000 × 40 scenario array, which it still has to do. The hardware-independent
-measure is the `*_evaluations` columns: the proxy builds its interpolant from
-**30 exact prices** where a full re-simulation of the 50-trade netting set
-evaluates **8.8 million**. With a realistic pricing library, that ratio — not the
-NumPy timings — is what the speed-up would approach.
+Under the three-factor model the linear proxy runs at roughly **4× the speed** of
+a full re-simulation, while the **Chebyshev tensor proxy is at break-even**
+(0.9×): evaluating a dense `n³` coefficient tensor on every path costs about as
+much as simply repricing the whole book analytically. That is a genuine finding
+about this model, not an implementation artefact — the evaluation is routed
+through BLAS and the linear path was verified bit-identical to a reference
+implementation.
+
+The hardware-independent measure tells the other half of the story: the proxy
+builds its interpolant from **~940 exact prices** where a full re-simulation of
+the netting sets evaluates **12.4 million**. In this project the "expensive"
+repricing is itself only a couple of vectorised NumPy expressions, so wall-clock
+speed-ups understate what the proxies buy. With a realistic pricing library the
+ratio of exact-price counts — not the NumPy timings — is what the speed-up would
+approach.
 
 This is a didactic research prototype, not a production system.
