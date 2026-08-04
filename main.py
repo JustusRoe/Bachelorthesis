@@ -5,20 +5,13 @@ Run with:      python main.py
 
 Pipeline
 --------
-    initial zero curves           -> cva.curves
-    Hull-White algebra            -> cva.hullwhite
-    three-factor simulation       -> cva.market
-    MODEL VALIDATION (runs first) -> cva.validation
-    analytic FX valuation         -> cva.instruments
-    scenario matrix               -> cva.scenarios
-    netting & expected exposure   -> cva.exposure
-    survival / PD curves          -> cva.credit
-    true CVA (full simulation)    -> cva.cva_engine
-    standalone / incremental proxy-> cva.proxies
-    interpolation (1-D or 3-D)    -> cva.interpolation
-    FX vs rates risk split        -> cva.risk_split
-    error metrics                 -> cva.metrics
-    figures                       -> cva.plots
+    curves, Hull-White, 3-factor simulation  -> cva.model
+    MODEL VALIDATION (runs first)            -> cva.validation
+    FX forwards/swaps, scenario matrices     -> cva.products
+    netting sets, incoming trades            -> cva.portfolio
+    hazard, EE, CVA, error metrics           -> cva.cva
+    interpolation + the two proxies          -> cva.proxies
+    figures                                  -> cva.plots
 
 The whole study is run TWICE, once with RATE_MODEL="deterministic" (the
 single-factor fallback) and once with "stochastic", on identical trades and
@@ -35,23 +28,23 @@ import time
 import numpy as np
 import pandas as pd
 
-from cva import config, plots, proxies, risk_split, validation
-from cva.cva_engine import cva_from_values, cva_standard_error
-from cva.exposure import (
-    discounted_expected_exposure,
+from cva import config, plots, proxies, validation
+from cva.cva import (
+    cva_from_values,
+    cva_standard_error,
     expected_exposure,
     potential_future_exposure,
+    speedup,
+    summarise_errors,
 )
-from cva.interpolation import state_box
-from cva.market import ThreeFactorMarket
-from cva.metrics import speedup, summarise_errors
+from cva.model import ThreeFactorMarket
 from cva.portfolio import (
     build_all_netting_sets,
     build_incoming_trades,
     portfolio_to_frame,
 )
-from cva.proxies import PricingContext
-from cva.scenarios import netting_set_scenario_values
+from cva.products import netting_set_values
+from cva.proxies import PricingContext, state_box
 
 pd.set_option("display.width", 250)
 pd.set_option("display.max_columns", 80)
@@ -104,14 +97,13 @@ def build_world(rate_model: str, netting_sets=None, incoming=None):
 
     batch = {}
     for ns in netting_sets:
-        values = netting_set_scenario_values(ns.trades, market, scen)
+        values = netting_set_values(ns.trades, market, scen)
         batch[ns.name] = {
             "netting_set": ns,
             "values": values,                                       # stored scenario matrix
             "cva": cva_from_values(values, scen, market, ns.hazard),  # stored CVA
             "cva_se": cva_standard_error(values, scen, ns.hazard),
             "ee": expected_exposure(values),
-            "ee_discounted": discounted_expected_exposure(values, scen.df_domestic),
             "pfe": potential_future_exposure(values),
             "mtm_today": float(values[0, 0]),
             "incoming": (incoming[ns.name] if incoming is not None
@@ -279,6 +271,72 @@ def run_node_sweep(world) -> pd.DataFrame:
                 max_abs_rel_error=float(np.max(errors)),
                 mean_exact_evaluations=float(np.mean(evaluations)),
             ))
+
+    return pd.DataFrame(rows)
+
+
+def run_grid_shape_sweep(world) -> pd.DataFrame:
+    """Isotropic n x n x n against anisotropic 2 x n x n state grids.
+
+    V is exactly affine in S, so two nodes reproduce the spot dimension to
+    machine precision.  An isotropic grid therefore spends a factor n on a
+    dimension that needs none.  This sweep measures what dropping that factor
+    costs in accuracy (nothing, in principle) and buys in time.
+
+    Timing is measured on the SAME calls that produce the errors, and compared
+    against the full re-simulation of each netting set, so the break-even point
+    can be read off per book size.
+    """
+    ctx, batch = world["ctx"], world["batch"]
+    rows = []
+
+    # Truth and the re-simulation reference, once per (netting set, trade).
+    truths, resim_ms = {}, {}
+    for ns in world["netting_sets"]:
+        stored = batch[ns.name]
+        for item in stored["incoming"]:
+            truths[(ns.name, item.key)] = proxies.incremental_exact_repricing(
+                item.trade, ctx, ns.hazard, stored["values"], stored["cva"], repeats=1).cva
+            resim_ms[(ns.name, item.key)] = 1000.0 * proxies.full_resimulation_incremental(
+                ns.trades, item.trade, ctx, ns.hazard, stored["cva"]).seconds
+
+    shapes = {
+        "isotropic n x n x n": lambda n: n,
+        "anisotropic 2 x n x n": lambda n: config.anisotropic_nodes(n),
+    }
+
+    for shape, node_spec in shapes.items():
+        for method in config.INTERP_METHODS:
+            for n in config.NODE_SWEEP:
+                errors, evaluations, proxy_ms, reference_ms = [], [], [], []
+                for ns in world["netting_sets"]:
+                    stored = batch[ns.name]
+                    for item in stored["incoming"]:
+                        true_inc = truths[(ns.name, item.key)]
+                        if abs(true_inc) < REL_ERROR_FLOOR:
+                            continue
+                        res = proxies.incremental_proxy(
+                            item.trade, ctx, ns.hazard, stored["values"], stored["cva"],
+                            method=method, n_state_nodes=node_spec(n),
+                            n_time_nodes=config.SWEEP_TIME_NODES,
+                        )
+                        errors.append(abs(res.cva - true_inc) / abs(true_inc))
+                        evaluations.append(res.n_exact_evaluations)
+                        proxy_ms.append(1000.0 * res.seconds)
+                        reference_ms.append(resim_ms[(ns.name, item.key)])
+
+                rows.append(dict(
+                    sweep="grid_shape", rate_model=world["rate_model"],
+                    state_dims=ctx.n_state_dimensions, grid_shape=shape,
+                    interp_method=method, n_rate_nodes=n,
+                    n_spot_nodes=config.SPOT_NODES_ANISOTROPIC if "aniso" in shape else n,
+                    mean_abs_rel_error=float(np.mean(errors)),
+                    max_abs_rel_error=float(np.max(errors)),
+                    mean_exact_evaluations=float(np.mean(evaluations)),
+                    mean_proxy_ms=float(np.mean(proxy_ms)),
+                    mean_resim_ms=float(np.mean(reference_ms)),
+                    speedup_vs_resim=float(np.mean(reference_ms) / np.mean(proxy_ms)),
+                ))
 
     return pd.DataFrame(rows)
 
@@ -523,6 +581,31 @@ def report_sensitivity(node_sweep: pd.DataFrame, domain_sweep: pd.DataFrame) -> 
         index=False, float_format=lambda v: f"{v:>14.3e}"))
 
 
+def report_grid_shape(sweep: pd.DataFrame) -> None:
+    """Isotropic vs anisotropic state grids: accuracy, cost and break-even."""
+    print_header("7b. GRID SHAPE: isotropic n x n x n vs anisotropic 2 x n x n "
+                 "(2 nodes in S, since V is affine in S)")
+    for method in config.INTERP_METHODS:
+        sub = sweep[sweep["interp_method"] == method]
+        view = sub.pivot_table(index="n_rate_nodes", columns="grid_shape",
+                               values=["mean_abs_rel_error", "mean_exact_evaluations",
+                                       "mean_proxy_ms"])
+        print(f"\n  --- {method} ---")
+        print(view.to_string(float_format=lambda v: f"{v:>13,.4g}"))
+
+    print("\n  Break-even against full re-simulation (speedup > 1 means the proxy wins):")
+    be = sweep.pivot_table(index="n_rate_nodes", columns=["grid_shape", "interp_method"],
+                           values="speedup_vs_resim")
+    print(be.to_string(float_format=lambda v: f"{v:>10.2f}x"))
+    reference = sweep["mean_resim_ms"].mean()
+    print(f"\n  full re-simulation reference: {reference:,.1f} ms per pricing request")
+    for (shape, method), sub in sweep.groupby(["grid_shape", "interp_method"]):
+        winning = sub[sub["speedup_vs_resim"] > 1.0]["n_rate_nodes"]
+        verdict = (f"faster up to n = {int(winning.max())}" if len(winning)
+                   else "never faster at any swept n")
+        print(f"    {shape:24s} {method:10s} -> {verdict}")
+
+
 def report_comparison(comparison: pd.DataFrame, split: pd.DataFrame) -> None:
     print_header("8. DETERMINISTIC vs STOCHASTIC RATES - side by side (linear interpolation)")
     view = comparison[[
@@ -594,6 +677,9 @@ def main() -> None:
         node_sweeps.append(run_node_sweep(world))
         domain_sweeps.append(run_domain_sweep(world))
 
+    # Grid-shape study only makes sense where the state is 3-D.
+    grid_shape = run_grid_shape_sweep(worlds["stochastic"])
+
     node_sweep = pd.concat(node_sweeps, ignore_index=True)
     domain_sweep = pd.concat(domain_sweeps, ignore_index=True)
 
@@ -603,7 +689,7 @@ def main() -> None:
     representative = {
         item.key: item.trade for item in incoming_first if item.key in ("new_swap", "new_fwd")
     }
-    split = risk_split.risk_split_table(
+    split = validation.risk_split_table(
         representative, world_sto["market"], world_sto["scen"],
         near_leg_date=config.INCOMING_SWAP_NEAR,
     )
@@ -612,12 +698,13 @@ def main() -> None:
     for name in ("deterministic", "stochastic"):
         report_study(worlds[name], results[name])
     report_sensitivity(node_sweep, domain_sweep)
+    report_grid_shape(grid_shape)
     report_comparison(comparison, split)
 
     # ---- exports ------------------------------------------------------------
     all_results = pd.concat(results.values(), ignore_index=True)
     all_results.to_csv(os.path.join(config.RESULTS_DIR, config.MAIN_RESULTS_CSV), index=False)
-    pd.concat([node_sweep, domain_sweep], ignore_index=True).to_csv(
+    pd.concat([node_sweep, domain_sweep, grid_shape], ignore_index=True).to_csv(
         os.path.join(config.RESULTS_DIR, config.SENSITIVITY_CSV), index=False)
     portfolio_to_frame(shared_sets).to_csv(
         os.path.join(config.RESULTS_DIR, config.PORTFOLIO_CSV), index=False)
@@ -653,6 +740,7 @@ def main() -> None:
         plots.plot_interpolation_convergence(node_sweep, domain_sweep, config.RESULTS_DIR),
         plots.plot_error_vs_netting_set_size(results["stochastic"], config.RESULTS_DIR),
         plots.plot_rate_model_comparison(comparison, config.RESULTS_DIR),
+        plots.plot_grid_shape(grid_shape, config.RESULTS_DIR),
         plots.plot_convergence(convergence, config.N_PATHS, config.RESULTS_DIR),
         plots.plot_risk_split(split, config.INCOMING_SWAP_NEAR, config.RESULTS_DIR),
     ]

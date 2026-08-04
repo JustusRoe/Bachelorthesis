@@ -1,22 +1,11 @@
 """
-Validation suite for the three-factor market model.
+Model validation and the FX-vs-rates risk decomposition.
 
-Five checks, run BEFORE any CVA result is produced.  A model that does not
-reprice its own inputs cannot be trusted to price anything else, so this module
-runs first and `main.py` refuses to continue if a mandatory test fails.
-
-    1. CURVE REPRODUCTION      does the simulation reprice the initial curves?
-    2. FX MARTINGALE           is a fair-struck forward worth zero today?
-    3. QUANTO                  is the change-of-measure drift doing its job?
-    4. ZERO-VOL DEGENERACY     does sigma_d = sigma_f = 0 give the base model?
-    5. CONVERGENCE             how does CVA behave as paths increase?
-
-Tests 1 and 2 are statistical: they compare a Monte Carlo estimate against a
-closed-form target and pass when the gap is inside a few standard errors.  Tests
-3 and 4 are deterministic comparisons run on COMMON RANDOM NUMBERS, which makes
-them far sharper than an independent-runs comparison would be - the quanto bias
-we are looking for is smaller than the raw Monte Carlo noise, and only cancels
-because both runs see identical draws.
+Five checks run before any CVA is reported; `main.py` refuses to continue if one
+fails.  Tests 1-2 are statistical (a Monte Carlo estimate against a closed-form
+target, passing within a few standard errors); tests 3-4 are deterministic
+comparisons on COMMON RANDOM NUMBERS, which is what makes them sharp enough to
+resolve effects smaller than the raw simulation noise.
 """
 
 from __future__ import annotations
@@ -27,14 +16,10 @@ import numpy as np
 import pandas as pd
 
 from . import config
-from .credit import HazardCurve
-from .cva_engine import cva_from_values, cva_standard_error
-from .curves import ZeroCurve
-from .market import ThreeFactorMarket
-from .scenarios import netting_set_scenario_values
+from .cva import cva_from_values, cva_standard_error
+from .model import ThreeFactorMarket, ZeroCurve
+from .products import Trade, netting_set_values
 
-
-# ----------------------------------------------------------------------------
 
 @dataclass
 class Check:
@@ -50,20 +35,13 @@ class Check:
     units: str = ""
     note: str = ""
 
-    def as_row(self) -> dict:
-        return {
-            "test": self.test, "case": self.case, "estimate": self.estimate,
-            "target": self.target, "error": self.error, "tolerance": self.tolerance,
-            "units": self.units, "passed": self.passed, "note": self.note,
-        }
-
 
 @dataclass
 class ValidationReport:
     checks: list[Check] = field(default_factory=list)
 
-    def add(self, check: Check) -> None:
-        self.checks.append(check)
+    def add(self, **kwargs):
+        self.checks.append(Check(**kwargs))
 
     @property
     def all_passed(self) -> bool:
@@ -73,7 +51,13 @@ class ValidationReport:
         return [c for c in self.checks if not c.passed]
 
     def to_frame(self) -> pd.DataFrame:
-        return pd.DataFrame([c.as_row() for c in self.checks])
+        return pd.DataFrame([vars(c) for c in self.checks])
+
+
+def _within_sigmas(estimate, target, stderr):
+    """Pass if the estimate is inside the configured number of standard errors."""
+    tol = config.VALIDATION_TOLERANCE_SIGMAS * stderr
+    return abs(estimate - target) <= tol, tol
 
 
 # ----------------------------------------------------------------------------
@@ -81,163 +65,106 @@ class ValidationReport:
 # ----------------------------------------------------------------------------
 
 def test_curve_reproduction(report: ValidationReport, n_paths: int, seed: int) -> None:
-    """Does the simulated model reprice the two initial zero curves?
+    """Does the simulation reprice both initial zero curves?
 
-    DOMESTIC.  The domestic money-market account is the numeraire, so a zero
-    coupon bond must satisfy
+    Domestic, with the domestic money-market account as numeraire:
+        E[D_d(0,T)] = P_d(0,T)
 
-        E[ D_d(0,T) ] = P_d(0,T).                                        (V1)
-
-    FOREIGN.  Under the domestic measure E[exp(-int r_f)] is NOT P_f(0,T) - that
+    Foreign: under the domestic measure E[exp(-int r_f)] is NOT P_f(0,T) - that
     identity holds under the FOREIGN measure.  The correct domestic statement is
-    that one unit of foreign currency delivered at T is worth S(0) P_f(0,T)
-    today:
-
-        E[ D_d(0,T) * S(T) ] = S(0) * P_f(0,T).                          (V2)
-
-    (V2) is simultaneously the foreign curve check and the covered-interest-
-    parity check, which is why the quanto adjustment is what makes it hold.
-
-    A second, stronger foreign check reaches beyond the simulated date: the
-    domestic value of a foreign bond bought at T and maturing at T' must be
-
-        E[ D_d(0,T) * S(T) * P_f(T,T') ] = S(0) * P_f(0,T').             (V3)
+    that one unit of foreign currency delivered at T is worth S(0) P_f(0,T):
+        E[D_d(0,T) S(T)] = S(0) P_f(0,T)
+    which is simultaneously the covered-interest-parity check.  A third variant
+    reaches past the simulated date via a forward-starting foreign bond:
+        E[D_d(0,T) S(T) P_f(T,T')] = S(0) P_f(0,T')
     """
-    market = ThreeFactorMarket.build(rate_model="stochastic")
+    market = ThreeFactorMarket.build("stochastic")
     tenors = np.array(config.VALIDATION_TENORS, dtype=float)
     times = np.unique(np.concatenate([[0.0], config.TIME_GRID, tenors]))
     scen = market.simulate(times, n_paths, seed)
-
     index = {round(float(t), 10): i for i, t in enumerate(times)}
+
+    def record(case, sample, target):
+        estimate = float(sample.mean())
+        stderr = float(sample.std(ddof=1) / np.sqrt(n_paths))
+        passed, tol = _within_sigmas(estimate, target, stderr)
+        report.add(test="1. curve reproduction", case=case, estimate=estimate,
+                   target=float(target), error=estimate - float(target), tolerance=tol,
+                   passed=passed, units="discount factor", note=f"MC std err {stderr:.2e}")
 
     for tenor in tenors:
         col = index[round(float(tenor), 10)]
-
-        # --- (V1) domestic ---------------------------------------------------
-        sample = scen.df_domestic[:, col]
-        estimate, target = float(sample.mean()), float(market.p_domestic_0(tenor))
-        stderr = float(sample.std(ddof=1) / np.sqrt(n_paths))
-        report.add(Check(
-            test="1. curve reproduction", case=f"USD P(0,{tenor:g}y)",
-            estimate=estimate, target=target, error=estimate - target,
-            tolerance=config.VALIDATION_TOLERANCE_SIGMAS * stderr,
-            passed=abs(estimate - target) <= config.VALIDATION_TOLERANCE_SIGMAS * stderr,
-            units="discount factor", note=f"MC std err {stderr:.2e}",
-        ))
-
-        # --- (V2) foreign, via covered interest parity -----------------------
-        sample = scen.df_domestic[:, col] * scen.spots[:, col] / market.spot_0
-        estimate, target = float(sample.mean()), float(market.p_foreign_0(tenor))
-        stderr = float(sample.std(ddof=1) / np.sqrt(n_paths))
-        report.add(Check(
-            test="1. curve reproduction", case=f"EUR P(0,{tenor:g}y)",
-            estimate=estimate, target=target, error=estimate - target,
-            tolerance=config.VALIDATION_TOLERANCE_SIGMAS * stderr,
-            passed=abs(estimate - target) <= config.VALIDATION_TOLERANCE_SIGMAS * stderr,
-            units="discount factor", note=f"MC std err {stderr:.2e}",
-        ))
-
-        # --- (V3) foreign bond seen from a future date -----------------------
+        fx_leg = scen.df_domestic[:, col] * scen.spots[:, col] / market.spot_0
         far = float(tenor) + 2.0
-        if far <= times[-1] + 5.0:
-            p_f_forward = market.bond_foreign(tenor, far, scen.r_f[:, col])
-            sample = scen.df_domestic[:, col] * scen.spots[:, col] / market.spot_0 * p_f_forward
-            estimate, target = float(sample.mean()), float(market.p_foreign_0(far))
-            stderr = float(sample.std(ddof=1) / np.sqrt(n_paths))
-            report.add(Check(
-                test="1. curve reproduction",
-                case=f"EUR P(0,{far:g}y) via P({tenor:g}y,{far:g}y)",
-                estimate=estimate, target=target, error=estimate - target,
-                tolerance=config.VALIDATION_TOLERANCE_SIGMAS * stderr,
-                passed=abs(estimate - target) <= config.VALIDATION_TOLERANCE_SIGMAS * stderr,
-                units="discount factor", note=f"MC std err {stderr:.2e}",
-            ))
+        record(f"USD P(0,{tenor:g}y)", scen.df_domestic[:, col], market.p_domestic_0(tenor))
+        record(f"EUR P(0,{tenor:g}y)", fx_leg, market.p_foreign_0(tenor))
+        record(f"EUR P(0,{far:g}y) via P({tenor:g}y,{far:g}y)",
+               fx_leg * market.bond_foreign(tenor, far, scen.r_f[:, col]),
+               market.p_foreign_0(far))
 
 
 # ----------------------------------------------------------------------------
-# Test 2 - FX martingale / fair forward
+# Test 2 - FX martingale
 # ----------------------------------------------------------------------------
 
-def fair_forward_error(market: ThreeFactorMarket, scen, tenor: float, times: np.ndarray):
-    """Simulated present value of a forward struck at today's fair rate.
+def fair_forward_error(market, scen, tenor: float, times):
+    """PV of a forward struck at today's fair rate; must be zero.
 
-    A forward on one EUR struck at K = F(0,T) = S(0) P_f(0,T)/P_d(0,T) must be
-    worth exactly zero today.  Simulated, its value is
-
-        E[ D_d(0,T) * (S(T) - K) ]
-
-    Returns (value, standard error, relative error against the forward level).
+    Returns (value, standard error, value relative to the forward level).
     """
     col = int(np.argmin(np.abs(times - tenor)))
     strike = float(market.forward_fx(tenor))
     payoff = scen.df_domestic[:, col] * (scen.spots[:, col] - strike)
     value = float(payoff.mean())
     stderr = float(payoff.std(ddof=1) / np.sqrt(payoff.size))
-    # Express as a relative error on the forward rate itself, in basis points.
-    scale = strike * float(market.p_domestic_0(tenor))
-    return value, stderr, value / scale
+    return value, stderr, value / (strike * float(market.p_domestic_0(tenor)))
 
 
 def test_fx_martingale(report: ValidationReport, n_paths: int, seed: int) -> None:
     """A fair-struck forward must have zero value at t = 0."""
-    market = ThreeFactorMarket.build(rate_model="stochastic")
+    market = ThreeFactorMarket.build("stochastic")
     tenors = np.array(config.VALIDATION_TENORS, dtype=float)
     times = np.unique(np.concatenate([[0.0], config.TIME_GRID, tenors]))
     scen = market.simulate(times, n_paths, seed)
 
     for tenor in tenors:
         value, stderr, relative = fair_forward_error(market, scen, float(tenor), times)
-        report.add(Check(
-            test="2. FX martingale", case=f"fair {tenor:g}y forward, PV per EUR",
-            estimate=value, target=0.0, error=value,
-            tolerance=config.VALIDATION_TOLERANCE_SIGMAS * stderr,
-            passed=abs(value) <= config.VALIDATION_TOLERANCE_SIGMAS * stderr,
-            units="USD per EUR of notional",
-            note=f"{1e4*relative:+.2f} bp of forward; MC std err {stderr:.2e}",
-        ))
+        passed, tol = _within_sigmas(value, 0.0, stderr)
+        report.add(test="2. FX martingale", case=f"fair {tenor:g}y forward, PV per EUR",
+                   estimate=value, target=0.0, error=value, tolerance=tol, passed=passed,
+                   units="USD per EUR of notional",
+                   note=f"{1e4*relative:+.2f} bp of forward; MC std err {stderr:.2e}")
 
 
 # ----------------------------------------------------------------------------
 # Test 3 - quanto adjustment
 # ----------------------------------------------------------------------------
 
-def analytic_quanto_bias(market: ThreeFactorMarket, tenor: float) -> float:
+def analytic_quanto_bias(market, tenor: float) -> float:
     """Closed-form bias on the T-forward if the quanto adjustment were omitted.
 
-    Omitting the -rho_fS sigma_f sigma_S drift leaves the foreign short rate with
-    its FOREIGN-measure dynamics under the DOMESTIC measure.  Changing measure
-    with the FX density then shifts it by +rho_fS sigma_f sigma_S instead of
-    leaving it alone, i.e. by
+    Without it the foreign short rate keeps its FOREIGN-measure dynamics under
+    the DOMESTIC measure; changing measure with the FX density then shifts it by
+    p(t) = (rho_fS sigma_f sigma_S / a_f)(1 - exp(-a_f t)) instead of leaving it
+    alone, so the fair forward is overstated by
 
-        p(t) = (rho_fS sigma_f sigma_S / a_f) * (1 - exp(-a_f t)),
-
-    so the simulated foreign discount factor is out by exp(-int_0^T p(u) du) and
-    the fair forward is overstated by the same factor:
-
-        relative bias = exp( -(rho sigma_f sigma_S / a_f)
-                             * [T - (1-exp(-a_f T))/a_f] ) - 1              (V4)
+        exp( -(rho sigma_f sigma_S / a_f) [T - (1-exp(-a_f T))/a_f] ) - 1
     """
-    hw_f = market.hw_foreign
-    a = hw_f.a
-    coefficient = market.rho_fs * hw_f.sigma * market.sigma_fx / a
-    integral = coefficient * (tenor - (1.0 - np.exp(-a * tenor)) / a)
-    return float(np.exp(-integral) - 1.0)
+    a = market.hw_foreign.a
+    coefficient = market.rho_fs * market.hw_foreign.sigma * market.sigma_fx / a
+    return float(np.exp(-coefficient * (tenor - (1.0 - np.exp(-a * tenor)) / a)) - 1.0)
 
 
 def test_quanto(report: ValidationReport, n_paths: int, seed: int) -> None:
     """Is the change-of-measure drift on the foreign short rate doing its job?
 
     For each rho_fS the fair forward is priced twice on COMMON RANDOM NUMBERS,
-    once with the adjustment and once without.  Common random numbers matter
-    here: the bias being measured (tens of basis points) is comparable to the
+    with and without the adjustment.  That matters: the bias is comparable to the
     raw Monte Carlo noise, so an independent-runs comparison would be
     inconclusive, whereas the paired difference is essentially noiseless.
 
-    Two things must hold.
-      (a) WITH the adjustment the forward is fair at every rho_fS, including the
-          strongly correlated case.
-      (b) WITHOUT it the forward is biased by exactly the amount formula (V4)
-          predicts - which is what shows the term is not merely cosmetic.
+    (a) WITH the adjustment the forward must be fair at every rho_fS.
+    (b) WITHOUT it the bias must match the closed form above.
     """
     tenor = 5.0
     times = np.unique(np.concatenate([[0.0], config.TIME_GRID, [tenor]]))
@@ -245,39 +172,28 @@ def test_quanto(report: ValidationReport, n_paths: int, seed: int) -> None:
     for rho_fs in config.QUANTO_TEST_CORRELATIONS:
         results = {}
         for applied in (True, False):
-            market = ThreeFactorMarket.build(
-                rate_model="stochastic", rho_fs=rho_fs, apply_quanto=applied
-            )
-            scen = market.simulate(times, n_paths, seed)     # same seed -> same draws
-            value, stderr, relative = fair_forward_error(market, scen, tenor, times)
-            results[applied] = (value, stderr, relative, market)
+            market = ThreeFactorMarket.build("stochastic", rho_fs=rho_fs, apply_quanto=applied)
+            scen = market.simulate(times, n_paths, seed)      # same seed -> same draws
+            results[applied] = (*fair_forward_error(market, scen, tenor, times), market)
 
-        # (a) the adjusted model must price the forward fairly
         value, stderr, relative, market = results[True]
-        report.add(Check(
-            test="3. quanto adjustment", case=f"rho_fS={rho_fs:+.2f}, adjustment ON",
-            estimate=1e4 * relative, target=0.0, error=1e4 * relative,
-            tolerance=1e4 * config.VALIDATION_TOLERANCE_SIGMAS * stderr
-                      / (market.forward_fx(tenor) * market.p_domestic_0(tenor)),
-            passed=abs(value) <= config.VALIDATION_TOLERANCE_SIGMAS * stderr,
-            units="bp of the fair forward",
-            note="fair forward must price to zero",
-        ))
+        scale = float(market.forward_fx(tenor) * market.p_domestic_0(tenor))
+        passed, tol = _within_sigmas(value, 0.0, stderr)
+        report.add(test="3. quanto adjustment", case=f"rho_fS={rho_fs:+.2f}, adjustment ON",
+                   estimate=1e4 * relative, target=0.0, error=1e4 * relative,
+                   tolerance=1e4 * tol / scale, passed=passed,
+                   units="bp of the fair forward", note="fair forward must price to zero")
 
-        # (b) the unadjusted model must be off by the predicted amount
         predicted = analytic_quanto_bias(market, tenor)
         observed = results[False][2] - results[True][2]
-        # Tolerance: 5% of the predicted bias, or 0.5 bp when the prediction is
-        # itself ~0 (the rho_fS = 0 case, where there is nothing to correct).
+        # 5% of the predicted bias, or 0.5bp when the prediction is itself ~0
+        # (the rho_fS = 0 case, where there is nothing to correct).
         tolerance = max(0.05 * abs(predicted), 0.5e-4)
-        report.add(Check(
-            test="3. quanto adjustment", case=f"rho_fS={rho_fs:+.2f}, adjustment OFF",
-            estimate=1e4 * observed, target=1e4 * predicted,
-            error=1e4 * (observed - predicted), tolerance=1e4 * tolerance,
-            passed=abs(observed - predicted) <= tolerance,
-            units="bp of the fair forward",
-            note="paired difference vs closed form (V4)",
-        ))
+        report.add(test="3. quanto adjustment", case=f"rho_fS={rho_fs:+.2f}, adjustment OFF",
+                   estimate=1e4 * observed, target=1e4 * predicted,
+                   error=1e4 * (observed - predicted), tolerance=1e4 * tolerance,
+                   passed=abs(observed - predicted) <= tolerance,
+                   units="bp of the fair forward", note="paired difference vs closed form")
 
 
 # ----------------------------------------------------------------------------
@@ -287,179 +203,172 @@ def test_quanto(report: ValidationReport, n_paths: int, seed: int) -> None:
 def test_zero_vol_degeneracy(report: ValidationReport, n_paths: int, seed: int) -> None:
     """With sigma_d = sigma_f = 0 the model must collapse to the base model.
 
-    Two statements are checked, both to machine precision rather than to within
-    Monte Carlo error, because both runs use identical random draws.
-
-      (a) DETERMINISTIC MODE.  Building with rate_model="deterministic" must be
-          identical to building the stochastic model with both rate volatilities
-          set to zero.
-
-      (b) SINGLE-FACTOR EQUIVALENCE.  With FLAT curves the zero-volatility model
-          must reproduce the closed-form single-factor base model exactly:
-
-              S(t)      = S(0) exp((r_d - r_f - sigma_S^2/2) t + sigma_S W(t))
-              D_d(0,t)  = exp(-r_d t)
-              P_x(t,T)  = exp(-r_x (T-t))
-
-          This is the fallback the thesis reports against, so it has to be an
-          identity, not an approximation.
+    Checked to machine precision rather than within Monte Carlo error, because
+    both runs use identical random draws.  Two statements: deterministic mode
+    equals the stochastic model with zero rate vols, and with FLAT curves the
+    result equals the closed-form single-factor base model.
     """
     times = config.TIME_GRID
 
-    # --- (a) deterministic mode == stochastic mode with zero rate vols ------
-    det = ThreeFactorMarket.build(rate_model="deterministic")
-    zero = ThreeFactorMarket.build(rate_model="stochastic", sigma_d=0.0, sigma_f=0.0)
-    scen_det = det.simulate(times, n_paths, seed)
-    scen_zero = zero.simulate(times, n_paths, seed)
+    def record(case, gap, tol, units, note):
+        report.add(test="4. zero-vol degeneracy", case=case, estimate=gap, target=0.0,
+                   error=gap, tolerance=tol, passed=gap <= tol, units=units, note=note)
 
-    gap = float(np.max(np.abs(scen_det.spots - scen_zero.spots) / scen_det.spots))
-    report.add(Check(
-        test="4. zero-vol degeneracy", case="deterministic mode == sigma_rate=0",
-        estimate=gap, target=0.0, error=gap, tolerance=1e-14, passed=gap <= 1e-14,
-        units="max relative spot difference", note="identical random draws",
-    ))
+    det = ThreeFactorMarket.build("deterministic").simulate(times, n_paths, seed)
+    zero = ThreeFactorMarket.build("stochastic", sigma_d=0.0, sigma_f=0.0).simulate(
+        times, n_paths, seed)
+    record("deterministic mode == sigma_rate=0",
+           float(np.max(np.abs(det.spots - zero.spots) / det.spots)), 1e-14,
+           "max relative spot difference", "identical random draws")
 
-    # --- (b) flat curves + zero rate vol == the single-factor base model ----
     r_d, r_f = 0.04, 0.02
-    flat = ThreeFactorMarket.build(
-        rate_model="deterministic",
-        curve_domestic=ZeroCurve(b0=r_d, name="USD flat"),
-        curve_foreign=ZeroCurve(b0=r_f, name="EUR flat"),
-    )
-    scen_flat = flat.simulate(times, n_paths, seed)
+    flat = ThreeFactorMarket.build("deterministic",
+                                   curve_domestic=ZeroCurve(b0=r_d, name="USD flat"),
+                                   curve_foreign=ZeroCurve(b0=r_f, name="EUR flat"))
+    scen = flat.simulate(times, n_paths, seed)
 
     # Closed-form single-factor base model on the same Brownian increments.
-    rng = np.random.default_rng(seed)
-    z = rng.standard_normal((n_paths, times.size))
-    dt = np.diff(times, prepend=0.0)
-    brownian = np.cumsum(z * np.sqrt(dt), axis=1)
-    reference_spots = config.SPOT_0 * np.exp(
-        (r_d - r_f - 0.5 * config.VOL_FX**2) * times[None, :] + config.VOL_FX * brownian
-    )
+    z = np.random.default_rng(seed).standard_normal((n_paths, times.size))
+    brownian = np.cumsum(z * np.sqrt(np.diff(times, prepend=0.0)), axis=1)
+    reference = config.SPOT_0 * np.exp(
+        (r_d - r_f - 0.5 * config.VOL_FX**2) * times[None, :] + config.VOL_FX * brownian)
 
-    gap = float(np.max(np.abs(scen_flat.spots - reference_spots) / reference_spots))
-    report.add(Check(
-        test="4. zero-vol degeneracy", case="flat curves == single-factor GBM spot",
-        estimate=gap, target=0.0, error=gap, tolerance=1e-12, passed=gap <= 1e-12,
-        units="max relative spot difference",
-        note="closed-form base model, same draws",
-    ))
-
-    df_gap = float(np.max(np.abs(scen_flat.df_domestic - np.exp(-r_d * times)[None, :])))
-    report.add(Check(
-        test="4. zero-vol degeneracy", case="flat curves == exp(-r_d t) discounting",
-        estimate=df_gap, target=0.0, error=df_gap, tolerance=1e-14, passed=df_gap <= 1e-14,
-        units="max absolute DF difference", note="deterministic discounting recovered",
-    ))
-
-    # Bond prices must degenerate to plain forward discounting.
-    bond_gap = float(np.max(np.abs(
-        flat.bond_foreign(times[None, :], 5.0, scen_flat.r_f)
-        - np.exp(-r_f * np.maximum(5.0 - times, 0.0))[None, :]
-    )))
-    report.add(Check(
-        test="4. zero-vol degeneracy", case="flat curves == exp(-r_f (T-t)) bond",
-        estimate=bond_gap, target=0.0, error=bond_gap, tolerance=1e-14,
-        passed=bond_gap <= 1e-14, units="max absolute bond difference",
-        note="Hull-White A(t,T) collapses correctly",
-    ))
+    record("flat curves == single-factor GBM spot",
+           float(np.max(np.abs(scen.spots - reference) / reference)), 1e-12,
+           "max relative spot difference", "closed-form base model, same draws")
+    record("flat curves == exp(-r_d t) discounting",
+           float(np.max(np.abs(scen.df_domestic - np.exp(-r_d * times)[None, :]))), 1e-14,
+           "max absolute DF difference", "deterministic discounting recovered")
+    record("flat curves == exp(-r_f (T-t)) bond",
+           float(np.max(np.abs(flat.bond_foreign(times[None, :], 5.0, scen.r_f)
+                               - np.exp(-r_f * np.maximum(5.0 - times, 0.0))[None, :]))),
+           1e-14, "max absolute bond difference", "Hull-White A(t,T) collapses correctly")
 
 
 # ----------------------------------------------------------------------------
 # Test 5 - Monte Carlo convergence
 # ----------------------------------------------------------------------------
 
-def test_convergence(
-    report: ValidationReport,
-    netting_set,
-    seed: int,
-) -> pd.DataFrame:
-    """CVA of one netting set against the number of paths, with 95% intervals.
+def test_convergence(report: ValidationReport, netting_set, seed: int) -> pd.DataFrame:
+    """CVA against path count, with 95% intervals.
 
-    Reported for the largest netting set, which carries the biggest CVA and
-    therefore the biggest absolute simulation noise.  The pass criterion is
-    twofold: the standard error must fall roughly like 1/sqrt(N), and the
-    production estimate must sit inside the confidence interval of the largest
-    run.
+    Two criteria: the standard error must fall like 1/sqrt(N), and the production
+    estimate must lie inside the finest run's confidence interval.
     """
-    market = ThreeFactorMarket.build(rate_model="stochastic")
-    times = config.TIME_GRID
+    market = ThreeFactorMarket.build("stochastic")
     rows = []
-
     for n_paths in config.CONVERGENCE_PATHS:
-        scen = market.simulate(times, n_paths, seed)
-        values = netting_set_scenario_values(netting_set.trades, market, scen)
+        scen = market.simulate(config.TIME_GRID, n_paths, seed)
+        values = netting_set_values(netting_set.trades, market, scen)
         cva = cva_from_values(values, scen, market, netting_set.hazard)
         stderr = cva_standard_error(values, scen, netting_set.hazard)
-        rows.append(dict(
-            n_paths=n_paths, cva=cva, std_error=stderr,
-            ci_low=cva - 1.96 * stderr, ci_high=cva + 1.96 * stderr,
-            rel_std_error=stderr / abs(cva) if cva else np.nan,
-        ))
-
+        rows.append(dict(n_paths=n_paths, cva=cva, std_error=stderr,
+                         ci_low=cva - 1.96 * stderr, ci_high=cva + 1.96 * stderr,
+                         rel_std_error=stderr / abs(cva) if cva else np.nan))
     frame = pd.DataFrame(rows)
 
-    # (a) the standard error should scale like 1/sqrt(N): fit a log-log slope.
     slope = float(np.polyfit(np.log(frame["n_paths"]), np.log(frame["std_error"]), 1)[0])
-    report.add(Check(
-        test="5. convergence", case="std error scaling exponent",
-        estimate=slope, target=-0.5, error=slope + 0.5, tolerance=0.10,
-        passed=abs(slope + 0.5) <= 0.10, units="d log(se) / d log(N)",
-        note="Monte Carlo theory predicts -0.5",
-    ))
+    report.add(test="5. convergence", case="std error scaling exponent", estimate=slope,
+               target=-0.5, error=slope + 0.5, tolerance=0.10,
+               passed=abs(slope + 0.5) <= 0.10, units="d log(se) / d log(N)",
+               note="Monte Carlo theory predicts -0.5")
 
-    # (b) the production estimate must lie inside the finest run's interval.
-    production = frame.loc[frame["n_paths"] == config.N_PATHS, "cva"]
+    production = frame.loc[frame["n_paths"] == config.N_PATHS]
     finest = frame.iloc[-1]
     if not production.empty:
-        estimate = float(production.iloc[0])
-        inside = finest["ci_low"] <= estimate <= finest["ci_high"]
-        report.add(Check(
-            test="5. convergence",
-            case=f"{config.N_PATHS:,}-path CVA inside {int(finest['n_paths']):,}-path 95% CI",
-            estimate=estimate, target=float(finest["cva"]),
-            error=estimate - float(finest["cva"]),
-            tolerance=1.96 * float(finest["std_error"]),
-            passed=bool(inside), units="USD",
-            note=f"production relative std error "
-                 f"{frame.loc[frame['n_paths'] == config.N_PATHS, 'rel_std_error'].iloc[0]:.3%}",
-        ))
-
+        estimate = float(production["cva"].iloc[0])
+        report.add(test="5. convergence",
+                   case=f"{config.N_PATHS:,}-path CVA inside {int(finest['n_paths']):,}-path 95% CI",
+                   estimate=estimate, target=float(finest["cva"]),
+                   error=estimate - float(finest["cva"]),
+                   tolerance=1.96 * float(finest["std_error"]),
+                   passed=bool(finest["ci_low"] <= estimate <= finest["ci_high"]), units="USD",
+                   note=f"production relative std error "
+                        f"{float(production['rel_std_error'].iloc[0]):.3%}")
     return frame
 
 
 # ----------------------------------------------------------------------------
-# Driver
+# Driver and formatting
 # ----------------------------------------------------------------------------
 
-def run_all(netting_set, seed: int = config.SEED) -> tuple[ValidationReport, pd.DataFrame]:
-    """Run the full suite and return the report plus the convergence table."""
+def run_all(netting_set, seed: int = config.SEED):
+    """Run the full suite; returns (report, convergence table)."""
     report = ValidationReport()
-    n_paths = config.VALIDATION_PATHS
-
-    test_curve_reproduction(report, n_paths, seed)
-    test_fx_martingale(report, n_paths, seed)
-    test_quanto(report, n_paths, seed)
-    test_zero_vol_degeneracy(report, min(n_paths, 5_000), seed)
-    convergence = test_convergence(report, netting_set, seed)
-
-    return report, convergence
+    n = config.VALIDATION_PATHS
+    test_curve_reproduction(report, n, seed)
+    test_fx_martingale(report, n, seed)
+    test_quanto(report, n, seed)
+    test_zero_vol_degeneracy(report, min(n, 5_000), seed)
+    return report, test_convergence(report, netting_set, seed)
 
 
 def format_report(report: ValidationReport) -> str:
-    """Render the validation report as an aligned console table."""
-    lines = []
-    current = None
-    for check in report.checks:
-        if check.test != current:
-            current = check.test
-            lines.append("")
-            lines.append(f"  {current}")
-        status = "PASS" if check.passed else "FAIL"
+    """Render the report as an aligned console table."""
+    lines, current = [], None
+    for c in report.checks:
+        if c.test != current:
+            current = c.test
+            lines += ["", f"  {current}"]
         lines.append(
-            f"    [{status}] {check.case:<46s} "
-            f"estimate {check.estimate:>14.8g}  target {check.target:>14.8g}  "
-            f"|error| {abs(check.error):>11.4g}  tol {check.tolerance:>11.4g}"
-            + (f"   ({check.note})" if check.note else "")
-        )
+            f"    [{'PASS' if c.passed else 'FAIL'}] {c.case:<46s} "
+            f"estimate {c.estimate:>14.8g}  target {c.target:>14.8g}  "
+            f"|error| {abs(c.error):>11.4g}  tol {c.tolerance:>11.4g}"
+            + (f"   ({c.note})" if c.note else ""))
     return "\n".join(lines)
+
+
+# ----------------------------------------------------------------------------
+# FX vs rates risk decomposition
+# ----------------------------------------------------------------------------
+
+def variance_components(trade: Trade, market, scen) -> dict:
+    """Blocks of the trade's instantaneous variance, averaged over paths per date.
+
+    With factors (S, x_d, x_f) driven by vols v = (sigma_S S, sigma_d, sigma_f),
+    Var(dV)/dt = sum_ij Delta_i Delta_j v_i v_j rho_ij, which splits into
+
+        FX    = (Delta_S sigma_S S)^2
+        RATES = Delta_d^2 sigma_d^2 + Delta_f^2 sigma_f^2 + 2 rho_df ...
+        CROSS = 2 Delta_S sigma_S S (rho_dS Delta_d sigma_d + rho_fS Delta_f sigma_f)
+
+    The cross term is signed, so shares can fall outside 0-100%.
+    """
+    fx_move = trade.delta_spot(market, scen.times, scen.r_f) * market.sigma_fx * scen.spots
+    d_move = trade.delta_x_domestic(market, scen.times, scen.r_d) * market.hw_domestic.sigma
+    f_move = trade.delta_x_foreign(market, scen.times, scen.spots,
+                                   scen.r_f) * market.hw_foreign.sigma
+
+    fx = fx_move**2
+    rates = d_move**2 + f_move**2 + 2.0 * market.rho_df * d_move * f_move
+    cross = 2.0 * fx_move * (market.rho_ds * d_move + market.rho_fs * f_move)
+    return {"fx": fx.mean(axis=0), "rates": rates.mean(axis=0),
+            "cross": cross.mean(axis=0), "total": (fx + rates + cross).mean(axis=0)}
+
+
+def risk_split_table(trades: dict, market, scen,
+                     report_dates=(0.25, 0.75, 1.5, 2.5),
+                     near_leg_date: float = 1.0) -> pd.DataFrame:
+    """Tabulate the FX / rates split for several trades at several dates.
+
+    `report_dates` should straddle `near_leg_date` so the before/after contrast
+    is visible; the table flags which side of settlement each row falls on.
+    """
+    times = np.asarray(scen.times, dtype=float)
+    rows = []
+    for name, trade in trades.items():
+        components = variance_components(trade, market, scen)
+        for target in report_dates:
+            col = int(np.argmin(np.abs(times - target)))
+            fx, rates = float(components["fx"][col]), float(components["rates"][col])
+            cross, total = float(components["cross"][col]), float(components["total"][col])
+            rows.append(dict(
+                trade=name, date_y=round(float(times[col]), 3),
+                phase="before near-leg settlement" if times[col] < near_leg_date
+                      else "after near-leg settlement",
+                total_vol_usd=np.sqrt(max(total, 0.0)),
+                fx_share=fx / total if total else np.nan,
+                rates_share=rates / total if total else np.nan,
+                cross_share=cross / total if total else np.nan,
+                fx_share_excl_cross=fx / (fx + rates) if (fx + rates) else np.nan))
+    return pd.DataFrame(rows)

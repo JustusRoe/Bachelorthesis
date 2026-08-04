@@ -764,3 +764,81 @@ def plot_risk_split(
 
     fig.tight_layout()
     return _save(fig, results_dir, filename)
+
+
+# ----------------------------------------------------------------------------
+# 11. Isotropic vs anisotropic state grids
+# ----------------------------------------------------------------------------
+
+def plot_grid_shape(sweep: pd.DataFrame, results_dir: str,
+                    filename: str = "grid_shape.png") -> str:
+    """Isotropic n x n x n against anisotropic 2 x n x n state grids.
+
+    V is exactly affine in the spot, so two nodes reproduce that dimension to
+    machine precision; an isotropic grid spends a factor n on it for nothing.
+    Colour is the interpolation method, line style the grid shape.  The right
+    panel carries the break-even rule against full re-simulation: above the
+    dotted line the proxy is slower than simply repricing the whole book.
+    """
+    fig, (ax_err, ax_cost, ax_time) = _new_figure(1, 3, figsize=(15.5, 4.4))
+    colours = {"linear": C_STANDALONE, "chebyshev": C_INCREMENTAL}
+    markers = {"linear": "s", "chebyshev": "^"}
+    styles = {"isotropic n x n x n": "--", "anisotropic 2 x n x n": "-"}
+    floor = 1e-16
+
+    for (shape, method), sub in sweep.groupby(["grid_shape", "interp_method"]):
+        sub = sub.sort_values("n_rate_nodes")
+        kwargs = dict(color=colours[method], marker=markers[method], markersize=7,
+                      linewidth=2.0, linestyle=styles[shape],
+                      label=f"{method}, {shape.split()[0]}", zorder=3)
+        ax_err.plot(sub["n_rate_nodes"], sub["mean_abs_rel_error"].clip(lower=floor), **kwargs)
+        ax_time.plot(sub["n_rate_nodes"], sub["speedup_vs_resim"], **kwargs)
+
+    ax_err.set_yscale("log")
+    ax_err.set_ylim(bottom=floor / 4)
+    ax_err.set_ylabel("mean |relative error|", color=INK_SECONDARY, fontsize=9)
+    ax_err.set_title("Accuracy is unchanged", color=INK, fontsize=10.5, loc="left")
+    # The two grid shapes agree to 7+ significant figures, so each pair of curves
+    # lies on top of the other - which is exactly the finding.
+    ax_err.annotate("solid and dashed coincide:\nthe spot nodes were buying nothing",
+                    xy=(0.04, 0.06), xycoords="axes fraction",
+                    fontsize=7.5, color=INK_MUTED, style="italic")
+
+    # Node counts depend only on the grid shape, not on the interpolation method,
+    # so this panel draws one line per shape rather than four.
+    for shape, sub in sweep[sweep["interp_method"] == "linear"].groupby("grid_shape"):
+        sub = sub.sort_values("n_rate_nodes")
+        ax_cost.plot(sub["n_rate_nodes"], sub["mean_exact_evaluations"],
+                     color=C_TRUE if "iso" in shape else INK_SECONDARY,
+                     marker="o", markersize=7, linewidth=2.0, linestyle=styles[shape],
+                     label=shape, zorder=3)
+
+    ax_cost.set_yscale("log")
+    ax_cost.set_ylabel("exact analytic prices per request", color=INK_SECONDARY, fontsize=9)
+    ax_cost.set_title("Node count falls by a factor n/2 (both methods)",
+                      color=INK, fontsize=10.5, loc="left")
+
+    ax_time.axhline(1.0, color=INK_MUTED, linewidth=1.2, linestyle=":", zorder=2)
+    ax_time.annotate("break-even with full re-simulation", xy=(0.03, 1.0),
+                     xycoords=("axes fraction", "data"), xytext=(0, 5),
+                     textcoords="offset points", fontsize=7.5, color=INK_MUTED, style="italic")
+    ax_time.set_yscale("log")
+    _speed = FuncFormatter(lambda v, _: f"{v:g}x")
+    ax_time.yaxis.set_major_formatter(_speed)
+    ax_time.yaxis.set_minor_formatter(_speed)   # else minors read "3 x 10^0"
+    ax_time.set_ylabel("speed-up vs full re-simulation", color=INK_SECONDARY, fontsize=9)
+    ax_time.set_title("Where the proxy stops paying for itself",
+                      color=INK, fontsize=10.5, loc="left")
+
+    for ax in (ax_err, ax_cost, ax_time):
+        _style_axes(ax)
+        ax.grid(axis="x", color=GRID, linewidth=0.8, zorder=0)
+        ax.set_xticks(sorted(sweep["n_rate_nodes"].unique()))
+        ax.set_xlabel("nodes per RATE dimension", color=INK_SECONDARY, fontsize=9)
+        ax.legend(frameon=False, fontsize=8, labelcolor=INK_SECONDARY)
+
+    fig.suptitle("Anisotropic state grid: 2 spot nodes (V is affine in S) "
+                 "and n nodes per rate factor",
+                 color=INK, fontsize=12, x=0.008, ha="left", y=1.02)
+    fig.tight_layout()
+    return _save(fig, results_dir, filename)

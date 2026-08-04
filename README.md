@@ -143,6 +143,23 @@ sweep both methods are perfectly flat in the node count — all their residual
 error comes from the time dimension. All genuine state curvature lives in `x_d`
 and `x_f`, where the bond prices are exponential.
 
+**Anisotropic grids act on that.** `config.anisotropic_nodes(n)` spends 2 nodes
+on the spot and `n` on each rate factor, giving `2n²` state nodes instead of `n³`:
+
+| nodes per rate dim | isotropic `n³` | anisotropic `2n²` | node reduction | mean rel. error |
+|---|---|---|---|---|
+| 3 | 432 | 288 | 1.5× | identical |
+| 4 | 1,024 | 512 | 2.0× | identical |
+| 5 | 2,000 | 800 | 2.5× | identical |
+| 6 | 3,456 | 1,152 | 3.0× | identical |
+
+"Identical" means the two grids agree to 7–13 significant figures; the residual
+difference is float associativity from the different contraction shape. Cutting
+the spot dimension to two nodes costs nothing, exactly as the affine structure
+predicts. It moves the Chebyshev break-even against full re-simulation out by one
+node (n = 4 → n = 5), which matters because n = 5 is where the Chebyshev error
+drops to ~8e-9.
+
 **Maturity cut-offs.** By default each leg is interpolated on its own smooth
 domain `[0, T_leg]` and the settlement jump is applied analytically.
 `split_legs=False` puts the whole trade on one domain — the naive variant kept
@@ -153,24 +170,19 @@ for the sensitivity study, where both methods lose ~12% and Chebyshev loses
 
 ## Module map
 
+Nine files. `config.py` imports nothing from the package, so it reads top to
+bottom as pure data.
+
 | File | Concern |
 |---|---|
-| `cva/config.py` | every parameter, each labelled market convention / modelling choice / synthetic |
-| `cva/curves.py` | Nelson-Siegel initial zero curves: `P(0,t)`, `f(0,t)`, `∫f` |
-| `cva/hullwhite.py` | `B(t,T)`, exact-fit `A(t,T)`, `α(t)`, `∫α`, exact OU transition, quanto shift |
-| `cva/market.py` | the three-factor model, Cholesky correlation, simulation |
-| `cva/validation.py` | the five mandatory tests |
-| `cva/instruments.py` | `FXForward`, `FXSwap`, analytic valuation and the three analytic deltas |
+| `cva/config.py` | every parameter, each labelled [CONVENTION] / [CHOICE] / [SYNTHETIC] |
+| `cva/model.py` | Nelson-Siegel curves, Hull-White (`A`, `B`, `α`, OU transition, quanto shift), the three-factor simulation |
+| `cva/products.py` | `FXForward`, `FXSwap`, analytic valuation, the three analytic deltas, scenario matrices |
 | `cva/portfolio.py` | the 5 netting sets, the incoming test trades, CVA-delta sizing |
-| `cva/scenarios.py` | scenario value matrices, netting-set aggregation |
-| `cva/credit.py` | piecewise-constant hazard term structure, survival, marginal PDs |
-| `cva/exposure.py` | EE, discounted EE, PFE, MC standard errors |
-| `cva/cva_engine.py` | the CVA formula, true CVA, true incremental CVA |
-| `cva/interpolation.py` | the N-dimensional tensor interpolant, linear and Chebyshev |
-| `cva/proxies.py` | standalone proxy, incremental proxy, full-re-simulation benchmark |
-| `cva/risk_split.py` | FX vs rates variance decomposition |
-| `cva/metrics.py` | signed / absolute / relative error, speed-up |
-| `cva/plots.py` | all ten figures |
+| `cva/cva.py` | hazard term structure, EE / discounted EE / PFE, the CVA formula, error metrics |
+| `cva/proxies.py` | the N-dimensional tensor interpolant (linear + Chebyshev) and the two proxies |
+| `cva/validation.py` | the five mandatory tests plus the FX-vs-rates risk decomposition |
+| `cva/plots.py` | all eleven figures |
 | `main.py` | orchestration and reporting only |
 
 ---
@@ -242,6 +254,7 @@ cost measure).
 | `signed_errors.png` | signed error above/below the zero line, one panel per proxy |
 | `accuracy_vs_time.png` | error against wall-clock cost per pricing request |
 | `interpolation_convergence.png` | 1-D vs 3-D convergence, the same errors priced in repricings, and the naive-domain failure |
+| `grid_shape.png` | isotropic `n³` vs anisotropic `2n²` grids: accuracy, node count and break-even |
 | `error_vs_size.png` | standalone error against netting-set size, absolute and relative |
 | `rate_model_comparison.png` | deterministic vs stochastic, side by side |
 | `mc_convergence.png` | CVA and standard error against path count |
@@ -250,13 +263,19 @@ cost measure).
 
 ## Reading the timings
 
-Under the three-factor model the linear proxy runs at roughly **4× the speed** of
-a full re-simulation, while the **Chebyshev tensor proxy is at break-even**
-(0.9×): evaluating a dense `n³` coefficient tensor on every path costs about as
-much as simply repricing the whole book analytically. That is a genuine finding
-about this model, not an implementation artefact — the evaluation is routed
-through BLAS and the linear path was verified bit-identical to a reference
-implementation.
+Under the three-factor model the linear proxy runs at roughly **3-4× the speed**
+of a full re-simulation and stays there for every node count, because its cost is
+dominated by the `2^D` corner lookups rather than by `n`. The **Chebyshev tensor
+proxy degrades with `n`** and crosses break-even: on an isotropic grid it is
+faster up to n = 4 and slower from n = 5, on an anisotropic grid faster up to
+n = 5. Evaluating a dense coefficient tensor on every path eventually costs more
+than simply repricing the whole book analytically.
+
+That is a genuine finding about this model, not an implementation artefact — the
+evaluation is routed through BLAS and the linear path was verified bit-identical
+to a reference implementation. The wall-clock figures do carry run-to-run noise
+of roughly ±20%, so the node-count reduction (exact) is the more reliable half of
+the cost story.
 
 The hardware-independent measure tells the other half of the story: the proxy
 builds its interpolant from **~940 exact prices** where a full re-simulation of
