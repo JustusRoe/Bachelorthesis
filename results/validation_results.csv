@@ -28,4 +28,4 @@ test,case,estimate,target,error,tolerance,passed,units,note
 4. zero-vol degeneracy,flat curves == exp(-r_d t) discounting,8.881784197001252e-16,0.0,8.881784197001252e-16,1e-14,True,max absolute DF difference,deterministic discounting recovered
 4. zero-vol degeneracy,flat curves == exp(-r_f (T-t)) bond,3.3306690738754696e-16,0.0,3.3306690738754696e-16,1e-14,True,max absolute bond difference,"Hull-White A(t,T) collapses correctly"
 5. convergence,std error scaling exponent,-0.5100197467359634,-0.5,-0.010019746735963397,0.1,True,d log(se) / d log(N),Monte Carlo theory predicts -0.5
-5. convergence,"10,000-path CVA inside 40,000-path 95% CI",3640172.176427498,3633798.351508016,6373.824919481762,45434.11866093772,True,USD,production relative std error 1.284%
+5. convergence,"20,000-path CVA inside 40,000-path 95% CI",3613642.432716155,3633798.351508016,-20155.918791861273,45434.11866093772,True,USD,production relative std error 0.908%

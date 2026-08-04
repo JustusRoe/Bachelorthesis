@@ -22,9 +22,10 @@ import numpy as np
 
 # ---------------------------------------------------------------- simulation
 SEED = 42
-N_PATHS = 10_000        # [CHOICE] down from the single-factor model's 20,000:
-                        # three factors and an n^3 grid cost more.  MC standard
-                        # errors are reported so the noise is quantified.
+N_PATHS = 20_000        # [CHOICE] three factors and an n^3 grid cost more than
+                        # the single-factor model, but this is the path count
+                        # the thesis reports against.  MC standard errors are
+                        # reported so the noise is quantified.
 N_TIMING_REPEATS = 3    # each pricing request is timed this often; keep the minimum
 
 
