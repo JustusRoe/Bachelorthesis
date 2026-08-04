@@ -179,6 +179,16 @@ SPOT_NODES_ANISOTROPIC = 2
 def anisotropic_nodes(n_rate: int, n_spot: int = SPOT_NODES_ANISOTROPIC) -> dict:
     """Per-dimension node counts for a grid that is coarse in S and fine in the rates."""
     return {"spot": n_spot, "x_d": n_rate, "x_f": n_rate}
+
+
+# Production default for BOTH proxies: 2 spot nodes, N_STATE_NODES rate nodes.
+# The grid-shape sweep proved this is exactly as accurate as the isotropic
+# N_STATE_NODES^3 grid (agreement to 7+ significant figures) while needing
+# n/2 fewer exact prices, so there is no reason to pay for the isotropic grid
+# in production.  Under deterministic rates the state is 1-D (spot only) and
+# this dict correctly collapses to just {"spot": 2}, since ValueInterpolant
+# only reads the keys present in market.state_names.
+PRODUCTION_STATE_NODES = anisotropic_nodes(N_STATE_NODES)
 SWEEP_TIME_NODES = 12           # sweep-only.  At the production 6 the
                                 # time-dimension error dominates and would
                                 # flatten the very curves the sweep must expose.

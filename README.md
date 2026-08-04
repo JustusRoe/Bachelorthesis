@@ -156,9 +156,20 @@ on the spot and `n` on each rate factor, giving `2n²` state nodes instead of `n
 "Identical" means the two grids agree to 7–13 significant figures; the residual
 difference is float associativity from the different contraction shape. Cutting
 the spot dimension to two nodes costs nothing, exactly as the affine structure
-predicts. It moves the Chebyshev break-even against full re-simulation out by one
-node (n = 4 → n = 5), which matters because n = 5 is where the Chebyshev error
-drops to ~8e-9.
+predicts, and is the production default (`config.PRODUCTION_STATE_NODES`) for
+both proxies.
+
+**The Chebyshev evaluator was rewritten to use it.** Profiling the tensor
+contraction showed the *first* state dimension going through a BLAS batched
+matmul while every *remaining* dimension fell back to a Python-level
+broadcast-multiply-and-sum — assumed cheap because each step shrinks the tensor
+by a factor of `n`, but at 20,000 paths it was the single largest cost in the
+proxy, ahead of the matmul it was meant to be cheaper than. Routing every
+dimension through the same batched-matmul trick (reshaping each basis to a
+`(P, T, 1, n)` batch of row vectors) cut the per-call cost roughly 4×. Combined
+with the anisotropic grid, the Chebyshev proxy's speed-up against full
+re-simulation went from **0.94×** (slower than simply rebuilding the book) to
+**2.8×** — restoring the point of using it as a proxy at all.
 
 **Maturity cut-offs.** By default each leg is interpolated on its own smooth
 domain `[0, T_leg]` and the settlement jump is applied analytically.
@@ -263,19 +274,26 @@ cost measure).
 
 ## Reading the timings
 
-Under the three-factor model the linear proxy runs at roughly **3-4× the speed**
-of a full re-simulation and stays there for every node count, because its cost is
-dominated by the `2^D` corner lookups rather than by `n`. The **Chebyshev tensor
-proxy degrades with `n`** and crosses break-even: on an isotropic grid it is
-faster up to n = 4 and slower from n = 5, on an anisotropic grid faster up to
-n = 5. Evaluating a dense coefficient tensor on every path eventually costs more
-than simply repricing the whole book analytically.
+At the production settings (20,000 paths, `PRODUCTION_STATE_NODES` — 2 spot / 5
+rate nodes) the linear proxy runs at roughly **3.6× the speed** of a full
+re-simulation and the Chebyshev proxy at roughly **2.8×**, both essentially flat
+across trade types because their cost is dominated by the grid evaluation, not by
+the trade being priced. The `interp_method` breakdown in `cva_results.csv`
+carries the exact per-request timings.
 
-That is a genuine finding about this model, not an implementation artefact — the
-evaluation is routed through BLAS and the linear path was verified bit-identical
-to a reference implementation. The wall-clock figures do carry run-to-run noise
-of roughly ±20%, so the node-count reduction (exact) is the more reliable half of
-the cost story.
+Both routes through the tensor contraction go through BLAS batched matmuls end
+to end (verified against a reference implementation, bit-identical for the
+linear path). An earlier version of the Chebyshev evaluator left the later
+contraction dimensions as a Python-level broadcast-sum, which looked cheap
+locally (each step shrinks the tensor by a factor of `n`) but dominated the
+total cost at production path counts and made the isotropic-grid proxy *slower*
+than full re-simulation (0.94×) — a proxy with no speed advantage has no reason
+to exist. Fixing the contraction and defaulting to the anisotropic grid recovered
+the ~3× speed-up. `interpolation_convergence.png` and `grid_shape.png` still show
+the isotropic sweep for the node-count comparison; `cva_results.csv` reflects the
+production (anisotropic) default. Wall-clock figures carry run-to-run noise of
+roughly ±15-20% on this machine; the node-count reduction is exact and is the
+more reliable half of the cost argument.
 
 The hardware-independent measure tells the other half of the story: the proxy
 builds its interpolant from **~940 exact prices** where a full re-simulation of

@@ -172,16 +172,22 @@ class _TensorInterpolant:
             block = curves.reshape(curves.shape[0], first.shape[-1], -1)
             acc = np.transpose(np.matmul(np.transpose(first, (1, 0, 2)), block), (1, 0, 2))
 
-            # The remaining contractions shrink the tensor by a factor n each
-            # time, so a broadcast-and-sum is already cheap.
-            trailing = [n.size for n in self.state_nodes[1:]]
+            # The remaining contractions also go through BLAS, via the same
+            # batched-matmul trick: each basis becomes a batch of (1, n) row
+            # vectors multiplying a batch of (n, rest) matrices, with (P, T) as
+            # the batch dimensions.  A plain broadcast-multiply-and-sum here
+            # looks cheap per element but is dominated by ufunc/Python overhead
+            # at production path counts - profiling showed it as the single
+            # largest cost in the Chebyshev proxy, well above the first
+            # contraction it was assumed to be cheaper than.
+            p, tt = first.shape[0], first.shape[1]
             for dim, basis in enumerate(rest):
-                acc = acc.reshape(basis.shape + tuple(trailing[dim + 1:]))
-                acc = (basis.reshape(basis.shape + (1,) * len(trailing[dim + 1:])) * acc)
-                acc = acc.sum(axis=2)
+                n_dim = basis.shape[-1]
+                acc = np.matmul(basis.reshape(p, tt, 1, n_dim),
+                                acc.reshape(p, tt, n_dim, -1))
             # With a 1-D state there is no `rest` loop and matmul leaves a
             # length-1 trailing axis; drop it.
-            return acc.reshape(first.shape[:2])
+            return acc.reshape(p, tt)
 
         # Multilinear: locate each query in its cell, then sum the 2^D corners.
         # Every corner sits at a constant element offset from the lower corner,
@@ -354,7 +360,7 @@ def _timed(fn, repeats: int = config.N_TIMING_REPEATS):
 def standalone_proxy(new_trade: Trade, ctx: PricingContext, hazard: HazardCurve,
                      method: str = config.DEFAULT_INTERP_METHOD,
                      n_time_nodes: int = config.N_TIME_NODES,
-                     n_state_nodes: int | dict = config.N_STATE_NODES,
+                     n_state_nodes: int | dict = config.PRODUCTION_STATE_NODES,
                      split_legs: bool = True,
                      recovery: float = config.RECOVERY_RATE,
                      repeats: int = config.N_TIMING_REPEATS) -> ProxyResult:
@@ -378,7 +384,7 @@ def incremental_proxy(new_trade: Trade, ctx: PricingContext, hazard: HazardCurve
                       stored_values: np.ndarray, stored_cva: float,
                       method: str = config.DEFAULT_INTERP_METHOD,
                       n_time_nodes: int = config.N_TIME_NODES,
-                      n_state_nodes: int | dict = config.N_STATE_NODES,
+                      n_state_nodes: int | dict = config.PRODUCTION_STATE_NODES,
                       split_legs: bool = True,
                       recovery: float = config.RECOVERY_RATE,
                       repeats: int = config.N_TIMING_REPEATS) -> ProxyResult:
