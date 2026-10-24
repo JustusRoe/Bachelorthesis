@@ -1,90 +1,66 @@
 # Wissensstand Bachelorarbeit – Justus Röder
 
-Stand: 24.10.2026. Sammeldokument für Feedback, Entscheidungen, geprüfte Quellen und offene Punkte.
+Stand: 24.10.2026. Sammeldokument für das Projekt in seiner **neuen Ausrichtung**: Feedback,
+Entscheidungen, Daten, geprüfte Quellen und offene Punkte.
 Rohtranskript der Sprachnachricht: `feedback_dozentin_transkript_roh.txt`
 
 ---
 
-## 1. Ausgangslage
+## 1. Thema
 
-**Bisheriger Titel (Exposé):** *Standalone vs. Incremental CVA Proxies for Real-Time Pre-Trade Pricing
-of FX Forwards and Swaps – A Simulation-Based Analysis of Under- and Overcharging Relative to the
-Full Portfolio CVA*
+**Arbeitstitel (Entwurf):** Intraday-Verzerrung von CVA-Proxies beim Pre-Trade-Pricing von
+EUR/USD-Forwards und -Swaps – eine empirische Analyse von Under- und Overcharging auf
+anonymisierten Bankdaten
 
-**Code im Repo (`cva/`, `main.py`):**
-- Drei-Faktor-Modell: Hull-White USD, Hull-White EUR (mit Quanto-Drift), EUR/USD-Spot (GBM);
-  Nelson-Siegel-Startkurven, umschaltbar deterministisch/stochastisch
-- 5 synthetische Netting-Sets, unbesichert; Hazard-Kurve stückweise konstant, R = 40 %
-- Drei Größen: wahrer inkrementeller CVA (volle Simulation), Standalone-Proxy, inkrementeller
-  Proxy (Szenario-Matrix + Interpolation des neuen Trades)
-- Interpolation linear und Chebyshev, anisotrope Gitter (Spot affin → 2 Knoten reichen)
-- 5 Validierungstests bestanden (Kurven, FX-Martingal, Quanto, Zero-Vol, Konvergenz)
+**Idee:** Banken berechnen die Szenario-Matrix ihrer Netting-Sets im Nacht-Batch. Untertags
+werden neue Trades gegen diesen Nacht-Stand bepreist, ohne dass die Matrix aktualisiert wird.
+Die Arbeit misst, wie stark dadurch über einen Beobachtungszeitraum unter- oder überberechnet
+wird – auf echten, anonymisierten Trade-Strömen einer Bank, gerechnet mit einem eigenen Modell.
 
-**Bisherige Ergebnisse (`results/cva_results.csv`):**
-
-| | mittlerer relativer Fehler |
-|---|---|
-| Standalone-Proxy | ca. 51–59 % (risikoreduzierender Trade > 200 %) |
-| Inkrementeller Proxy | ca. 0,002–0,03 % |
-
-- Swap 1y/3y: Exposure vor Settlement unter stochastischen Zinsen ca. 3,9× höher
-  (78 % zinsgetrieben), aber inkrementeller CVA unterscheidet sich zwischen den Zinsmodellen nur
-  um ca. 4 %, weil die Exposure nach Settlement dominiert.
-
----
-
-## 2. Feedback der Dozentin (Sprachnachricht 11.08.2026)
-
-**Gesamturteil:** Thema „richtig gut“, vorläufige Gliederung gut, Motivation/Problemstellung in
-Ordnung, Framework (Kap. 3) gut zitiert. Nach Überarbeitung → **Registrierung**. Diesen Monat
-keine Termine → schriftlich abstimmen.
-
-**To-dos:**
-1. **Analysezeitraum** festlegen und nennen.
-2. **Data Sources** als eigenen Punkt; welche Daten, welcher Zeitraum.
-3. **Allgemeine Forschungsfrage kürzen** (zu lang).
-4. **Konkretes Ziel:** ein Hauptziel + Teilziele/Forschungsfragen.
-5. **Stand der Literatur vor die Zielsetzung:** Motivation/Problem → Literatur → Ziele/Fragen.
-6. **Research Gaps** jeweils direkt bei den einzelnen Literaturpunkten formulieren, nicht gesammelt.
-7. **Results inkl. Diskussion:** Ergebnisse mit Literatur verknüpfen, Fragen/Hypothesen beantworten.
-8. Startpaket durchsehen.
-9. Überarbeitetes Exposé einreichen → registrieren.
-
----
-
-## 3. Kritik an der bisherigen Forschungslücke
-
-1. **Ergebnisse vorbestimmt.** Standalone ≥ inkrementell folgt aus der Netting-Ungleichung
-   (Subadditivität von max(·,0)); die Teilfrage „überberechnet er systematisch?“ ist durch einen
-   Beweis beantwortet. Der inkrementelle Proxy hat nur Interpolationsfehler, und der ist ~0.
-   Kernaussage wäre nur „Netting ignorieren ist teuer“ – bekannt.
-2. **Falsche Literaturaussage (Exposé 2.2):** „Alle Beiträge behandeln Standalone/inkrementellen
-   CVA als exakt berechnete Größen.“ Stimmt nicht: Pykhtin & Rosen (2010), Abschnitt 7
-   „Analytical CVA Contributions under a Normal Approximation“, schätzen Beiträge schnell
-   außerhalb des Simulationssystems (im Volltext geprüft).
-3. **Fehlende, sehr nahe Quelle:** Kenyon & Green (2014/15), „Efficient XVA Management“:
-   Trade-Level-Regression als Wertproxy, szenarioweise aggregiert; inkrementelle Änderungen laut
-   Abstract „exactly and simply“. Prinzipiell der inkrementelle Proxy mit Regression statt
-   Interpolation.
-4. **Inkonsistenz:** Lücke 2.5 nennt das FX-spezifische Zusammenspiel Spot/Zins, die
-   Forschungsfrage enthält es nicht.
-
----
-
-## 4. Neue Forschungsrichtung (entschieden): Intraday-Verzerrung
-
-**Idee:** Proxies werden nachts aus der Szenario-Matrix des Nacht-Batches berechnet und untertags
-nicht aktualisiert. Gemessen wird, wie stark dadurch über einen Beobachtungszeitraum unter- oder
-überberechnet wird – auf echten (anonymisierten) Trade-Strömen einer Bank.
-
-**Warum besser:**
-- Fehler hängt von echten Abläufen ab (Trades pro Tag/Batch, Richtung, Marktbewegung) und ist
+**Warum relevant:**
+- Der Fehler hängt von echten Abläufen ab (Trades pro Batch, Richtung, Marktbewegung) und ist
   nicht vorab ausrechenbar → echte empirische Frage.
-- Unter-/Überberechnung wird substanziell. **Hypothese:** gleichgerichtete Trade-Batches
-  (z. B. Kunde kauft wiederholt EUR) → systematisches **Undercharging**, weil die Matrix die
-  heutige Exposure nicht kennt; gegenläufige → **Overcharging**.
-- Erfüllt Dozentin-Punkte 1 und 2 (Zeitraum, Data Sources) automatisch.
-- Bestehender Code fast vollständig weiterverwendbar.
+- Unter-/Überberechnung hat direkte wirtschaftliche Folgen: Undercharging = Kreditrisiko nicht
+  vergütet; Overcharging = Quote nicht wettbewerbsfähig.
+- Reihenfolgeabhängigkeit des inkrementellen CVA ist theoretisch bekannt, aber nicht an realen
+  Intraday-Sequenzen gemessen (siehe Abschnitt 6).
+
+---
+
+## 2. Forschungsfrage und Ziele (Entwurf)
+
+> *How large and in which direction are the CVA pricing errors that arise when incoming FX trades
+> are charged against an overnight scenario matrix that is not updated intraday?*
+
+**Hauptziel:** Den Intraday-Fehler auf echten Trade-Strömen beziffern und in seine Ursachen
+zerlegen.
+
+**Teilfragen:**
+1. Wie groß ist der Fehler durch fehlende Trades seit dem Nacht-Lauf und wie groß der durch
+   Marktbewegungen untertags?
+2. Wird systematisch unter- oder überberechnet, abhängig von der Richtung der Trade-Batches?
+3. Wie schneidet der veraltete inkrementelle Proxy gegen den Standalone-Proxy als Referenz ab?
+
+**Hypothesen:**
+- H1: Gleichgerichtete Trade-Batches (z. B. Kunde kauft wiederholt EUR) führen zu
+  systematischem **Undercharging**, weil die Nacht-Matrix die gestiegene Exposure nicht kennt.
+- H2: Gegenläufige Trades führen zu **Overcharging**, weil der Netting-Effekt der heutigen
+  Trades fehlt.
+- H3: Der Fehler wächst mit der Anzahl der Trades seit dem Nacht-Lauf und mit der Größe der
+  Marktbewegung.
+
+---
+
+## 3. Methodik
+
+**Ablauf je Evaluationstag:**
+1. Nacht-Lauf: Szenario-Matrix aller offenen Trades je Netting-Set (Marktstand Tagesabschluss)
+2. Untertags je eingehendem Trade:
+   - **Standalone-Proxy:** Trade isoliert bepreist (kein Netting)
+   - **Veralteter inkrementeller Proxy:** Trade gegen die Nacht-Matrix bepreist
+   - **Wahrer inkrementeller CVA:** volle Simulation mit aktuellem Portfolio (inkl. der heute
+     bereits gebuchten Trades) und aktuellem Marktstand zum Trade-Zeitpunkt
+3. Fehler = Proxy − wahrer Wert (positiv = Overcharging, negativ = Undercharging)
 
 **Fehlerzerlegung je Trade:**
 1. Netting ignoriert (Standalone-Proxy, Referenz)
@@ -93,36 +69,41 @@ nicht aktualisiert. Gemessen wird, wie stark dadurch über einen Beobachtungszei
 
 Hinweis: Der Standalone-Proxy hängt nicht vom Portfolio ab; bei ihm veraltet nur der Markt.
 
-**Auswertung:** Summen über den Zeitraum (EUR unter-/überberechnet), Verteilung, Abhängigkeit von
-Anzahl Trades im Batch, Richtung, Größe der Marktbewegung, Produkt (Swap/Forward).
+**Auswertung:**
+- Summen über den Evaluationszeitraum (EUR unter-/überberechnet), je Counterparty und gesamt
+- Verteilung der Fehler, Anteil der Ursachen
+- Abhängigkeit von Anzahl Trades im Batch, Richtung, Größe der Marktbewegung, Produkt
+  (Swap/Forward), Laufzeit, Rating-Klasse
+- Diskussion der Ergebnisse direkt mit der Literatur verknüpft (Vorgabe der Dozentin)
 
-### Entwurf Forschungsfrage (englisch, wie Exposé)
+**Modellbasis (im Repo vorhanden, wird weiterverwendet):**
+- Drei-Faktor-Modell: Hull-White USD, Hull-White EUR (mit Quanto-Drift), EUR/USD-Spot
+- Analytische Bewertung von FX-Forwards und -Swaps, kein genestetes Monte Carlo
+- Netting-aware CVA, Standalone- und inkrementeller Proxy, Interpolation (linear/Chebyshev)
+- Validierungssuite (Kurven, FX-Martingal, Quanto, Zero-Vol, Konvergenz)
 
-> *How large and in which direction are the CVA pricing errors that arise when incoming FX trades
-> are charged against an overnight scenario matrix that is not updated intraday?*
-
-**Hauptziel:** Intraday-Fehler auf echten Trade-Strömen beziffern und in Ursachen zerlegen.
-
-**Teilfragen:**
-1. Wie groß ist der Fehler durch fehlende Trades seit dem Nacht-Lauf vs. durch Marktbewegungen?
-2. Systematisches Unter-/Überberechnen abhängig von der Richtung der Trade-Batches?
-3. Wie schneidet der veraltete inkrementelle Proxy gegen den Standalone-Proxy als Referenz ab?
+**Code-Erweiterungen (zu bauen):**
+- Einlesen der Bankdaten (Bestand, Trades, Marktdaten)
+- Kalibrierung an echte Kurven statt Nelson-Siegel mit synthetischen Parametern
+- Nacht-Matrix je Tag, sequenzielles Bepreisen untertags
+- Wahrer CVA zum Trade-Zeitpunkt, Fehlerzerlegung, Auswertung über den Zeitraum
 
 ---
 
-## 5. Daten und Annahmen
+## 4. Daten und Annahmen
 
 **Aus der Bank (anonymisiert; keine Bankalgorithmen):**
-- ca. 100 Counterparties; nicht jeder Kunde handelt täglich, oft batchweise (z. B. 1×/Woche
-  10 Trades) – für den Effekt reicht: mehrere Trades zwischen zwei Nacht-Läufen
+- ca. 100 Counterparties
 - je Trade: Kunden-ID, EUR/USD-Produkt (Forward/Swap), Laufzeit(en), Notional, Kurs, Zeitstempel
 - Spot und Zins zum Trade-Zeitpunkt (live)
+- Nicht jeder Kunde handelt täglich, oft batchweise (z. B. 1×/Woche 10 Trades) – für den Effekt
+  reicht: mehrere Trades zwischen zwei Nacht-Läufen
 
 **Zeitraum:** 6 Monate Historie, **Monat 7 als Evaluationsmonat**.
-- **Wichtig:** Zusätzlich **Snapshot aller offenen Trades** zum letzten Tag von Monat 6
-  anfordern. Historie allein reicht nicht – ältere, noch laufende Swaps/Forwards (bis 5 J.)
-  würden fehlen, Netting wäre falsch.
-- Historie nutzen, um Handelsverhalten zu beschreiben.
+- **Wichtig:** Zusätzlich **Snapshot aller offenen Trades** zum letzten Tag von Monat 6.
+  Historie allein reicht nicht – ältere, noch laufende Swaps/Forwards (bis 5 J.) würden fehlen,
+  Netting wäre falsch.
+- Historie nutzen, um das Handelsverhalten zu beschreiben (Frequenz, Richtung, Batches).
 - Option: mehr als einen Evaluationsmonat (Robustheit gegen ruhigen/unruhigen Einzelmonat).
 
 **CSA:** Annahme unbesichert. Besser: CSA-Kennzeichen ja/nein je Counterparty → nur unbesicherte
@@ -144,46 +125,66 @@ oder Annahme.
 - [ ] CSA-Kennzeichen
 - [ ] Rating-Klasse
 - [ ] Freigabe/Vertraulichkeit (NDA, ggf. Sperrvermerk, Veröffentlichung aggregierter Ergebnisse)
-- [ ] (allgemeine) Bestätigung, dass Pre-Trade-CVA untertags gegen Nacht-Stand gerechnet wird
+- [ ] (allgemeine) Bestätigung, dass Pre-Trade-CVA untertags gegen den Nacht-Stand gerechnet wird
+
+---
+
+## 5. Feedback der Dozentin (Sprachnachricht 11.08.2026) – Umsetzung im neuen Exposé
+
+**Gesamturteil:** Thema „richtig gut“, Gliederung gut, Motivation in Ordnung, Framework gut
+zitiert. Nach Überarbeitung → **Registrierung**. Diesen Monat keine Termine → schriftlich.
+Achtung: Die neue Richtung ist eine Themenänderung → Dozentin vorab informieren.
+
+| # | Vorgabe | Umsetzung im neuen Projekt |
+|---|---|---|
+| 1 | Analysezeitraum nennen | Monat 7 (Evaluation), Monate 1–6 als Historie |
+| 2 | Data Sources als eigener Punkt | Bankdaten (anonymisiert) + öffentliche Marktdaten |
+| 3 | Forschungsfrage kürzen | Entwurf in Abschnitt 2 |
+| 4 | Hauptziel + Teilziele | Abschnitt 2 |
+| 5 | Literatur vor die Zielsetzung | Gliederung: Motivation → Literatur → Ziele/Fragen |
+| 6 | Research Gaps je Literaturpunkt | Lücke direkt bei jedem Strang formulieren |
+| 7 | Results inkl. Diskussion | Ergebnisse mit Literatur verknüpfen, Hypothesen beantworten |
+| 8 | Startpaket durchsehen | offen |
+| 9 | Einreichen → registrieren | nach Umbau |
 
 ---
 
 ## 6. Literatur
 
-### 6.1 Geprüft (Volltext oder Abstract gelesen)
+### 6.1 Geprüfte Quellen und Rolle im neuen Projekt
 
-| Quelle | Befund | Status |
+| Quelle | Befund | Rolle |
 |---|---|---|
-| Pykhtin & Rosen (2010), J. Credit Risk 6(4); FEDS 2010-10 | Definition inkrementeller CVA, „appropriate for pricing new trades“, nicht additiv, reihenfolgeabhängig; **Abschn. 7: Normal-Approximation** für schnelle Beiträge | Volltext geprüft |
-| Vrins & Gregory (2011), Risk | Fehler < 2 %; CCS inkrementell zu Netting-Set mit 17 Trades; negativer inkrementeller CVA durch Netting | Volltext geprüft |
-| Kenyon & Green (2014), arXiv:1412.5332 / J. Risk 2015 | Trade-Level-Regression + Global Conditioning; inkrementell „exactly and simply“ | Abstract; **ins Exposé aufnehmen** |
-| Crépey & Dixon (2019), arXiv:1901.11081 | GP-Metamodell für MtM-Cube, Portfolio-CVA (IRS), kein inkrementeller Fokus | Abstract; in 2.3 ergänzen |
-| Glau, Pachon & Pötz (2019), arXiv:1912.01280 | Exposure-Speed-up per Funktionsapproximation (Equity, Bermudan Swaption); kein inkrementeller/Intraday-Fokus | Abstract |
-| Lu & Juan (2010), arXiv:1010.1689 | Szenario-Wiederverwendung für inkrementellen CVA | Quelle existiert |
-| Biagini, Gnoatto & Oliva (2021), arXiv:1905.11328 | Beispiel: Summe Standalone 457,49 / Portfolio 232,69 / inkrementell 84,52 EUR | Zahlen bestätigt |
-| Albanese et al. (2020/21), arXiv:2009.00368 | Inkrementelles XVA-Profil für neuen Swap, Common Random Numbers | Abstract |
+| Pykhtin & Rosen (2010), J. Credit Risk 6(4); FEDS 2010-10 | Definition inkrementeller CVA, „appropriate for pricing new trades“, nicht additiv, **reihenfolgeabhängig**; Abschn. 7: Normal-Approximation für schnelle Beiträge | Kernquelle: Reihenfolgeabhängigkeit = theoretische Basis der Intraday-Verzerrung |
+| Vrins & Gregory (2011), Risk | negativer inkrementeller CVA durch Netting; Proxy-Fehler < 2 % (CCS inkrementell, 17 Trades) | Netting-Effekte, Vorzeichen |
+| Lu & Juan (2010), arXiv:1010.1689 | Szenario-Wiederverwendung: neuer Trade in gespeicherten Szenarien bepreist | Mechanismus der Nacht-Matrix |
+| Kenyon & Green (2014), arXiv:1412.5332 / J. Risk 2015 | Trade-Level-Regression + Global Conditioning; inkrementelle Änderungen „exactly and simply“, Allokation inkrementell im Tagesgeschäft | nahe Quelle zu inkrementellem Pricing im Tagesablauf (Volltext prüfen) |
+| Biagini, Gnoatto & Oliva (2021), arXiv:1905.11328 | Beispiel: Summe Standalone 457,49 / Portfolio 232,69 / inkrementell 84,52 EUR | Größenordnung Netting-Effekt |
+| Albanese et al. (2020/21), arXiv:2009.00368 | inkrementelles XVA-Profil für neuen Trade, Common Random Numbers | inkrementelles Pricing, Methodik |
+| Crépey & Dixon (2019), arXiv:1901.11081 | GP-Metamodell für MtM-Cube, Portfolio-CVA | Proxy-Literatur (Randstrang) |
+| Glau, Pachon & Pötz (2019), arXiv:1912.01280 | Exposure-Speed-up per Funktionsapproximation | Proxy-Literatur (Randstrang) |
 
-### 6.2 Praxis-/Vendor-Quellen (nur Relevanzbeleg, nicht zitierfähig als Forschung)
-- Numerix Oneview, Murex MX.3, OSTTRA: Real-Time-Pre-Deal-XVA (standalone/inkrementell/marginal).
-  → belegt Praxisrelevanz, **aber** zeigt auch, dass manche Systeme intraday aktualisieren →
-  Prämisse „keine Intraday-Aktualisierung“ an Bankpraxis festmachen.
-- Alef Analytics (CCR/CVA-Serie): Reihenfolgeabhängigkeit mit zwei gegenläufigen Trades.
-- IHS Markit xVA-E-Book: ~10 Mio. Trade-Bewertungen für eine CVA-Replikation (100.000 Trades,
-  200 Zeitpunkte).
+### 6.2 Praxis-/Vendor-Quellen (Relevanzbeleg, keine Forschung)
+- Numerix Oneview, Murex MX.3, OSTTRA: Real-Time-Pre-Deal-XVA (standalone/inkrementell/marginal)
+  → belegt Praxisrelevanz, **aber** manche Systeme aktualisieren intraday → Prämisse „keine
+  Intraday-Aktualisierung“ an der Praxis der Bank festmachen.
+- Alef Analytics (CCR/CVA-Serie): Reihenfolgeabhängigkeit an zwei gegenläufigen Trades.
+- IHS Markit xVA-E-Book: ~10 Mio. Trade-Bewertungen für eine CVA-Replikation → Begründung,
+  warum Banken nicht bei jedem Trade neu simulieren.
 
-### 6.3 Weitere Exposé-Quellen (noch nicht einzeln geprüft)
-Gregory (2020), Green (2015), Ruiz (2015), Cesari et al. (2009), Longstaff & Schwartz (2001),
-Zeron & Ruiz (2018, 2020), Gaß et al. (2018), Deelstra et al. (2024), Capriotti et al. (2011),
-Zeitsch (2017), Ranaldo (2022), Gnoatto & Seiffert (2020), Brigo & Pallavicini (2013),
-Hull & White (1990).
+### 6.3 Grundlagenquellen (aus altem Exposé, weiter nutzbar; noch nicht einzeln geprüft)
+Gregory (2020), Green (2015), Ruiz (2015), Cesari et al. (2009), Zeitsch (2017), Hull & White
+(1990), Gnoatto & Seiffert (2020), Ranaldo (2022), Brigo & Pallavicini (2013).
+Proxy-/Interpolationsstrang (an Bedeutung verloren, ggf. kürzen): Longstaff & Schwartz (2001),
+Zeron & Ruiz (2018, 2020), Gaß et al. (2018), Deelstra et al. (2024), Capriotti et al. (2011).
 
-### 6.4 Literaturstand zur neuen Lücke (vorläufig, Websuche 24.10.2026)
+### 6.4 Stand zur Forschungslücke (vorläufig, Websuche 24.10.2026)
 - **Kein** akademischer Beitrag gefunden, der den Fehler durch veraltete Portfolio-/Marktdaten
   beim Pre-Trade-CVA quantifiziert.
-- Reihenfolgeabhängigkeit bekannt (Pykhtin & Rosen), aber nicht empirisch an Intraday-Sequenzen
-  gemessen.
+- Reihenfolgeabhängigkeit bekannt (Pykhtin & Rosen), aber nicht empirisch an
+  Intraday-Sequenzen gemessen.
 - **Noch nicht sicher:** Google Scholar, SSRN, arXiv systematisch prüfen; Risk.net (Paywall) –
-  Justus sucht dort selbst: „pre-deal CVA“, „incremental XVA intraday“.
+  Justus sucht selbst: „pre-deal CVA“, „incremental XVA intraday“.
 
 ---
 
@@ -191,12 +192,9 @@ Hull & White (1990).
 
 1. [ ] Systematische Literaturprüfung (Scholar, SSRN, arXiv) → Lücke absichern
 2. [ ] Mail an Dozentin mit neuer Richtung (vor dem Umbau) – Entwurf durch Claude
-3. [ ] Datenanfrage an die Bank (Checkliste Abschnitt 5)
-4. [ ] Exposé umbauen: Literatur vor Zielsetzung, Lücken je Literaturpunkt, Zeitraum + Data
-       Sources, kurze Forschungsfrage, Hauptziel + Teilziele, Results inkl. Diskussion;
-       Pykhtin & Rosen Abschn. 7, Kenyon & Green, Crépey & Dixon einarbeiten
-5. [ ] Code erweitern: Nacht-Matrix je Tag, sequenzielles Bepreisen, Einlesen der Bankdaten,
-       Fehlerzerlegung
+3. [ ] Datenanfrage an die Bank (Checkliste Abschnitt 4)
+4. [ ] Neues Exposé schreiben nach Abschnitt 5
+5. [ ] Code erweitern (Abschnitt 3)
 6. [ ] Startpaket der Dozentin sichten; formale Vorgaben klären
 
 ---
