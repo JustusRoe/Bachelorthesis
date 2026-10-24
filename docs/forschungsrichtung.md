@@ -11,7 +11,14 @@ aktualisiert. Gemessen wird Under-/Overcharging über einen Beobachtungszeitraum
 - je Trade: anonyme Kunden-ID, EUR/USD-Produkt (Forward/Swap), Laufzeit(en), Notional, Kurs, Zeitstempel
 - Spot + Zinsen zum Trade-Zeitpunkt (live)
 - Bankalgorithmen werden NICHT genutzt; Proxies + "wahrer" CVA aus eigenem Modell
-- Offene Klärung: Anfangsbestand je Netting-Set, Credit-Kurven/Ratings, volle Zinskurven, Vols
+- Zeitraum: 6 Monate Historie + 7. Monat als Evaluationsmonat
+- Anfangsbestand: Snapshot ALLER offenen Trades zum Ende Monat 6 anfragen
+  (Historie allein reicht nicht: ältere, noch offene Swaps/Forwards fehlen sonst)
+- CSA: Annahme unbesichert; bevorzugt CSA-Flag von Bank → nur unbesicherte CPs auswerten
+- Kreditqualität: bevorzugt Rating-Klasse je CP → Hazard aus öffentlichen Spreads je Rating;
+  Fallback zufällig → dann primär relative Fehler berichten
+- Marktdaten: Live-Spot/Zins von Bank zum Trade; Kurven tagesweise öffentlich (EZB/FRED) oder Bank;
+  FX-Vola historisch geschätzt oder Annahme
 
 ## Fehlerzerlegung je Trade
 1. Netting ignoriert (Standalone-Proxy, Referenz)
